@@ -1,0 +1,89 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/client"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model GlobalSettings {
+  id             String @id @default("global")
+  siteName       String @default("Power Platform")
+  primaryColor   String @default("#2eb64a")
+  secondaryColor String @default("#050a10")
+}
+
+model TeamMember {
+  id        String   @id @default(cuid())
+  name      String
+  role      String
+  email     String?
+  image     String?
+  active    Boolean  @default(true)
+  isManager Boolean  @default(false)
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+}
+
+model PropertyListing {
+  id        String   @id @default(cuid())
+  title     String
+  location  String
+  price     Float
+  image     String?
+  status    String   @default("AVAILABLE")
+  createdAt DateTime @default(now())
+}
+
+model BlogPost {
+  id        String   @id @default(cuid())
+  title     String
+  content   String
+  published Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model Group {
+  id          String        @id @default(cuid())
+  name        String
+  description String?
+  qrCode      String?
+  createdAt   DateTime      @default(now())
+  adminId     String
+  members     GroupMember[]
+  messages    Message[]
+  media       Media[]
+}
+
+model GroupMember {
+  id       String   @id @default(cuid())
+  groupId  String
+  group    Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  userId   String
+  role     String   @default("MEMBER")
+  isGuest  Boolean  @default(false)
+  joinedAt DateTime @default(now())
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  groupId   String
+  group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  userId    String
+  userName  String?
+  content   String
+  createdAt DateTime @default(now())
+}
+
+model Media {
+  id         String   @id @default(cuid())
+  groupId    String
+  group      Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  userId     String
+  url        String
+  status     String   @default("PENDING")
+  uploadedAt DateTime @default(now())
+  approvedBy String?
+}

@@ -1,0 +1,67 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: var(--primary-1);
+  --color-primary-light: var(--primary-2);
+  --color-secondary: #050a10;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-border: var(--border-color);
+}
+
+:root {
+  --background: #f1f5f9; 
+  --foreground: #0f172a; 
+  --card: #ffffff;
+  --border-color: #e2e8f0;
+  --primary-1: #2eb64a;
+  --primary-2: #4ade80;
+  --bg-opacity: 0;
+  --bg-image: none;
+}
+
+[data-theme='dark'] {
+  --background: #050a10;
+  --foreground: #f8fafc;
+  --card: #0c141d;
+  --border-color: rgba(255,255,255,0.05);
+}
+
+@layer base {
+  body {
+    @apply bg-background text-foreground transition-colors duration-300 antialiased relative min-h-screen;
+    background-image: var(--bg-image);
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+  }
+  
+  body::before {
+    content: "";
+    @apply absolute inset-0 -z-10 bg-background transition-opacity duration-1000;
+    opacity: calc(1 - var(--bg-opacity));
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-primary text-secondary font-black px-8 py-4 rounded-2xl hover:bg-primary-light hover:scale-105 active:scale-95 transition-all shadow-lg;
+    background: linear-gradient(135deg, var(--primary-1), var(--primary-2));
+  }
+}
+
+/* Custom Utilities */
+.glass {
+  @apply backdrop-blur-2xl border border-border bg-card/70;
+}
+
+[data-theme='dark'] .glass {
+  @apply bg-white/5 border-white/10;
+}
+
+.text-gradient {
+  background: linear-gradient(135deg, var(--primary-1), var(--primary-2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
