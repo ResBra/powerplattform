@@ -109,9 +109,7 @@ export default function SiteLayoutClient({ children, activePage, settings }: Sit
       <motion.aside initial={false} animate={{ width: isOpen ? 280 : 80 }} className="hidden lg:flex flex-col sticky top-0 h-screen bg-card border-r border-border z-[100] overflow-hidden shadow-2xl">
         <div className="p-6 flex items-center justify-between min-h-[100px]">
           <Link href="/dashboard" className="flex items-center gap-3">
-             <div style={signatureGradient} className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-lg shadow-primary/20 overflow-hidden">
-                <img src="/icon.png" alt="Logo" className="w-5 h-5 object-contain" />
-             </div>
+             <img src="/icon.png" alt="PowerNode" className="w-9 h-9 object-contain" />
              {isOpen && <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="font-black italic uppercase tracking-tighter text-lg whitespace-nowrap">Power<span className="text-gradient">Node.</span></motion.span>}
           </Link>
           <button onClick={() => setIsOpen(!isOpen)} className="p-2 hover:bg-foreground/5 rounded-lg text-foreground/40">{isOpen ? <X size={20} /> : <Menu size={20} />}</button>
@@ -132,10 +130,8 @@ export default function SiteLayoutClient({ children, activePage, settings }: Sit
 
       {/* MOBILE HEADER */}
       <header className="lg:hidden h-20 bg-black fixed top-0 inset-x-0 z-[110] flex items-center justify-between px-6 border-b border-white/5 shadow-xl">
-          <Link href="/dashboard" className="font-black italic uppercase tracking-tighter text-lg flex items-center gap-2 text-white">
-             <div style={signatureGradient} className="w-8 h-8 rounded shadow-sm flex items-center justify-center overflow-hidden">
-                <img src="/icon.png" alt="Logo" className="w-5 h-5 object-contain" />
-             </div>
+          <Link href="/dashboard" className="font-black italic uppercase tracking-tighter text-lg flex items-center gap-3 text-white">
+             <img src="/icon.png" alt="PowerNode" className="w-9 h-9 object-contain" />
              <span>Power<span className="text-primary">Node.</span></span>
           </Link>
          <div className="flex gap-2 text-white">
