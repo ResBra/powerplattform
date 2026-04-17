@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 import ClientHome from "@/components/ClientHome";
 import SiteLayout from "@/components/SiteLayout";
 
-const prisma = new PrismaClient();
+
 
 export default async function DashboardPage() {
   console.log("🛠️ OS DEBUG: Initializing High-Speed DB Engine...");
