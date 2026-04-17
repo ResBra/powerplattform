@@ -14,6 +14,7 @@ import {
   serverTimestamp,
   orderBy,
   arrayUnion,
+  arrayRemove,
   increment
 } from "firebase/firestore";
 import { revalidatePath } from "next/cache";
@@ -52,6 +53,7 @@ export async function createGroup(data: { name: string, description?: string, ad
       description: data.description || "",
       adminId: data.adminId,
       memberIds: [data.adminId],
+      moderatorIds: [], // Startet ohne Moderatoren
       memberCount: 1,
       createdAt: serverTimestamp()
     });
@@ -83,6 +85,7 @@ export async function getGroupsForUser(userId: string) {
         name: data.name,
         description: data.description,
         adminId: data.adminId,
+        moderatorIds: data.moderatorIds || [],
         _count: {
           members: data.memberCount || 1
         }
@@ -108,6 +111,7 @@ export async function getGroupDetails(id: string) {
     return {
       id: docSnap.id,
       ...data,
+      moderatorIds: data.moderatorIds || [],
       members: data.memberIds?.map((m: string) => ({ userId: m })) || []
     };
   } catch (error) {
@@ -142,6 +146,23 @@ export async function joinGroupAction(groupId: string, userId: string) {
     return { success: true };
   } catch (error: any) {
     console.error("Error joining group:", error);
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Ernennt oder entfernt einen Moderator.
+ */
+export async function toggleModeratorAction(groupId: string, userId: string, isCurrentlyMod: boolean) {
+  try {
+    const groupRef = doc(db, "groups", groupId);
+    await updateDoc(groupRef, {
+      moderatorIds: isCurrentlyMod ? arrayRemove(userId) : arrayUnion(userId)
+    });
+    revalidatePath(`/modules/qloud/${groupId}`);
+    return { success: true };
+  } catch (error: any) {
+    console.error("Error toggling moderator:", error);
     return { success: false, error: error.message };
   }
 }

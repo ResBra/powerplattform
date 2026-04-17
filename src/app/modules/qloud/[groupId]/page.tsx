@@ -19,6 +19,8 @@ import {
   Printer,
   Check,
   X,
+  Download,
+  ShieldCheck,
   Image as ImageIcon
 } from "lucide-react";
 import { auth, db } from "@/lib/firebase";
@@ -35,7 +37,8 @@ import {
   saveMediaMetadataAction, 
   joinGroupAction,
   approveMediaAction,
-  deleteMediaAction
+  deleteMediaAction,
+  toggleModeratorAction
 } from "../actions";
 import { QRCodeSVG } from "qrcode.react";
 import { upload } from '@vercel/blob/client';
@@ -49,14 +52,15 @@ export default function GroupPage() {
   const [newMessage, setNewMessage] = useState("");
   const [media, setMedia] = useState<any[]>([]);
   const [isQrOpen, setIsQrOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<any>(null); // Lightbox
   const [user, setUser] = useState<any>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isModerator, setIsModerator] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [dbStatus, setDbStatus] = useState<"connected" | "error" | "linking">("linking");
   const [copied, setCopied] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const [uploadStatus, setUploadStatus] = useState("");
-  const [uploadProgress, setUploadProgress] = useState(0);
 
   // 1. Initial Load & Auto-Join
   useEffect(() => {
@@ -65,10 +69,8 @@ export default function GroupPage() {
       if (!details) return router.push("/modules/qloud");
       setGroup(details);
       
-      // Auto-join logic
       const u = auth.currentUser;
       if (u && details.memberIds && !details.memberIds.includes(u.uid)) {
-        console.log("🚀 AUTO-JOINING GROUP...");
         await joinGroupAction(groupId as string, u.uid);
       }
     }
@@ -81,7 +83,10 @@ export default function GroupPage() {
 
     const unsubAuth = auth.onAuthStateChanged((u: any) => {
       setUser(u);
-      if (u?.uid === group.adminId) setIsAdmin(true);
+      const isOwner = u?.uid === group.adminId;
+      const isMod = group.moderatorIds?.includes(u?.uid) || isOwner;
+      setIsAdmin(isOwner);
+      setIsModerator(isMod);
     });
 
     const msgCol = collection(db, "groups", groupId as string, "messages");
@@ -142,12 +147,10 @@ export default function GroupPage() {
       });
       
       if (!result.success) throw new Error(result.error);
-
-      setUploadStatus("Fertig! Wartet auf Freigabe.");
+      setUploadStatus("Gesendet! Wartet auf Freigabe.");
       setTimeout(() => setUploadStatus(""), 3000);
       setActiveTab("gallery");
     } catch (err: any) { 
-      console.error("Upload Error:", err); 
       alert("Fehler beim Upload.");
     } finally { 
       setIsUploading(false); 
@@ -156,45 +159,47 @@ export default function GroupPage() {
   };
 
   const handleApprove = async (mediaId: string) => {
-    if (!isAdmin) return;
+    if (!isModerator) return;
     await approveMediaAction(groupId as string, mediaId);
   };
 
   const handleDeleteMedia = async (mediaId: string) => {
-    if (!isAdmin || !window.confirm("Dieses Bild permanent entfernen?")) return;
+    if (!isModerator || !window.confirm("Dieses Bild permanent entfernen?")) return;
     await deleteMediaAction(groupId as string, mediaId);
   };
 
-  const handleDeleteGroup = async () => {
-    if (!window.confirm("Bist du sicher? Alle Daten dieser Qloud werden permanent gelöscht.")) return;
-    const res = await deleteGroup(groupId as string, user.uid);
-    if (res.success) router.push("/modules/qloud");
+  const handleToggleModerator = async (targetUserId: string, currentIsMod: boolean) => {
+    if (!isAdmin) return;
+    await toggleModeratorAction(groupId as string, targetUserId, currentIsMod);
   };
 
-  const handleNativeShare = async () => {
-    const shareData = { title: group.name, text: `Komm in meine Qloud Gruppe '${group.name}'!`, url: window.location.href };
-    try { if (navigator.share) { await navigator.share(shareData); } else { copyInviteLink(); } } catch (err) { console.log(err); }
+  const handleDownload = async (url: string, filename: string) => {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = filename || 'qloud-moment.jpg';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (error) {
+      window.open(url, '_blank');
+    }
   };
-
-  const copyInviteLink = () => {
-    navigator.clipboard.writeText(window.location.href);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  if (!group) return <div className="p-20 text-center font-black animate-pulse opacity-10 uppercase tracking-widest">Bridging Cloud Nodes...</div>;
 
   const pendingMedia = media.filter(m => m.status === "PENDING");
   const approvedMedia = media.filter(m => m.status === "APPROVED");
 
+  if (!group) return <div className="p-20 text-center font-black animate-pulse opacity-10 uppercase tracking-widest">Bridging Cloud Nodes...</div>;
+
   return (
     <SiteLayoutClient activePage="qloud">
-      {/* 🔴 CONNECTION MONITOR */}
+      {/* 🟢 CONNECTION MONITOR */}
       <div className="fixed bottom-6 left-6 md:top-24 md:right-8 md:bottom-auto md:left-auto z-[999] flex items-center gap-3 px-4 py-2.5 bg-black/80 backdrop-blur-2xl border border-white/10 rounded-full shadow-2xl">
-         <div className="relative">
-            <div className={`w-2.5 h-2.5 rounded-full ${dbStatus === 'connected' ? 'bg-primary' : 'bg-red-500 animate-pulse'}`} />
-            {dbStatus === 'connected' && <div className="absolute inset-0 w-2.5 h-2.5 rounded-full bg-primary animate-ping opacity-75" />}
-         </div>
+         <div className="relative"><div className={`w-2.5 h-2.5 rounded-full ${dbStatus === 'connected' ? 'bg-primary' : 'bg-red-500 animate-pulse'}`} /></div>
          <span className="text-[9px] font-black uppercase text-white tracking-[0.2em] italic">
             {dbStatus === 'connected' ? 'Cloud Link: ACTIVE' : 'Cloud Link: OFFLINE'}
          </span>
@@ -217,7 +222,7 @@ export default function GroupPage() {
         <nav className="flex items-center gap-2 p-1.5 bg-foreground/5 rounded-2xl border border-white/5 w-fit overflow-x-auto max-w-full no-scrollbar">
            <button onClick={() => setActiveTab("chat")} className={`px-8 py-4 rounded-xl text-[10px] font-black italic uppercase transition-all whitespace-nowrap ${activeTab === 'chat' ? 'bg-primary text-secondary' : 'text-foreground/40'}`}>Feed</button>
            <button onClick={() => setActiveTab("gallery")} className={`px-8 py-4 rounded-xl text-[10px] font-black italic uppercase transition-all whitespace-nowrap ${activeTab === 'gallery' ? 'bg-primary text-secondary' : 'text-foreground/40'}`}>Galerie</button>
-           {isAdmin && (
+           {isModerator && (
              <button onClick={() => setActiveTab("moderation")} className={`px-8 py-4 rounded-xl text-[10px] font-black italic uppercase transition-all whitespace-nowrap flex items-center gap-2 ${activeTab === 'moderation' ? 'bg-amber-500 text-black shadow-lg animate-pulse' : 'text-amber-500/40'}`}>
                 Moderation {pendingMedia.length > 0 && <span className="bg-amber-500 text-black px-1.5 py-0.5 rounded-md text-[8px]">{pendingMedia.length}</span>}
              </button>
@@ -258,100 +263,86 @@ export default function GroupPage() {
                       </div>
                       <label htmlFor="media-upload" className="px-10 py-5 bg-primary text-secondary font-black italic uppercase rounded-2xl text-xs flex items-center gap-3 cursor-pointer shadow-2xl transition-all relative overflow-hidden group">
                          <input type="file" id="media-upload" accept="image/*" className="hidden" onChange={uploadMedia} />
-                         {isUploading ? (
-                           <>
-                             <Clock className="animate-spin" size={18} />
-                             <span className="relative z-10">{uploadStatus || "Process..."}</span>
-                           </>
-                         ) : (
-                           <>
-                             <Upload size={18} className="group-hover:-translate-y-1 transition-transform" /> 
-                             <span>BILD HOCHLADEN</span>
-                           </>
-                         )}
+                         {isUploading ? <><Clock className="animate-spin" size={18} /><span className="relative z-10">{uploadStatus || "Process..."}</span></> : <><Upload size={18} className="group-hover:-translate-y-1 transition-transform" /><span>BILD HOCHLADEN</span></>}
                       </label>
                    </div>
                    {approvedMedia.length > 0 ? (
                      <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
                         {approvedMedia.map((item) => (
-                          <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} key={item.id} className="group relative aspect-square bg-foreground/5 rounded-[2.5rem] overflow-hidden border border-white/5 shadow-lg">
-                             <img src={item.url} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" loading="lazy" />
-                             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-6">
+                          <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} key={item.id} className="group relative aspect-square bg-foreground/5 rounded-[2.5rem] overflow-hidden border border-white/5 shadow-lg cursor-pointer">
+                             <img src={item.url} onClick={() => setSelectedImage(item)} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" loading="lazy" />
+                             <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button onClick={() => handleDownload(item.url, `${group.name}-${item.userName}.jpg`)} className="p-2.5 bg-black/60 backdrop-blur-md text-white rounded-xl hover:bg-primary hover:text-secondary transition-all"><Download size={14} /></button>
+                                {isModerator && (
+                                  <button onClick={() => handleDeleteMedia(item.id)} className="p-2.5 bg-red-500/80 backdrop-blur-md text-white rounded-xl hover:bg-red-600 transition-all"><Trash2 size={14} /></button>
+                                )}
+                             </div>
+                             <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-6 opacity-0 group-hover:opacity-100 transition-opacity">
                                 <p className="text-[10px] font-black text-white italic uppercase tracking-widest flex items-center gap-2"><ImageIcon size={12} /> {item.userName}</p>
                              </div>
                           </motion.div>
                         ))}
                      </div>
                    ) : (
-                     <div className="py-24 text-center border-2 border-dashed border-white/5 rounded-[3rem]">
-                        <p className="text-foreground/20 font-black italic uppercase tracking-[0.5em] text-sm">Noch keine Highlights freigegeben</p>
-                     </div>
+                     <div className="py-24 text-center border-2 border-dashed border-white/5 rounded-[3rem] text-foreground/20 font-black italic uppercase tracking-[0.5em] text-sm">Offline Nodes. Empty.</div>
                    )}
                 </motion.section>
               )}
 
-              {isAdmin && activeTab === "moderation" && (
-                <motion.section key="moderation" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="space-y-10">
+              {isModerator && activeTab === "moderation" && (
+                <motion.section key="moderation" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-10">
                    <div className="p-8 bg-amber-500/10 border border-amber-500/20 rounded-[2.5rem] flex flex-col md:flex-row md:items-center justify-between gap-6">
                       <div className="flex items-center gap-4">
                         <div className="p-4 bg-amber-500 rounded-2xl text-black"><ShieldAlert size={28} /></div>
-                        <div>
-                           <h2 className="text-2xl font-black italic uppercase tracking-tighter text-amber-500">Moderations-Schleife</h2>
-                           <p className="text-[10px] font-black uppercase text-amber-500/60 italic tracking-widest leading-none">Hier landen alle Uploads vor der Veröffentlichung</p>
-                        </div>
+                        <div><h2 className="text-2xl font-black italic uppercase text-amber-500">Moderations-Schleife</h2><p className="text-[10px] font-black uppercase text-amber-500/60 italic tracking-widest leading-none">Freigaben für die Live-Galerie</p></div>
                       </div>
                       <div className="px-6 py-3 bg-amber-500/20 rounded-full border border-amber-500/30 text-amber-500 font-bold italic text-xs uppercase tracking-widest">{pendingMedia.length} Wartend</div>
                    </div>
-
-                   {pendingMedia.length > 0 ? (
-                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {pendingMedia.map((item) => (
-                          <div key={item.id} className="group bg-card border border-white/5 rounded-[3rem] overflow-hidden flex flex-col shadow-2xl">
-                             <div className="aspect-video relative overflow-hidden bg-white/5">
-                                <img src={item.url} className="w-full h-full object-cover" />
-                             </div>
-                             <div className="p-8 space-y-6">
-                                <div className="flex items-center justify-between">
-                                   <div className="flex items-center gap-3">
-                                      <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-black italic text-xs">{item.userName?.[0]}</div>
-                                      <span className="text-xs font-black italic uppercase text-white/40">{item.userName}</span>
-                                   </div>
-                                   <span className="text-[8px] font-black uppercase text-amber-500 bg-amber-500/10 px-2 py-1 rounded italic tracking-widest">Pending</span>
-                                </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                   <button onClick={() => handleApprove(item.id)} className="py-4 bg-primary text-secondary rounded-2xl font-black italic uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 hover:scale-105 transition-all outline-none"><Check size={16} /> Freigeben</button>
-                                   <button onClick={() => handleDeleteMedia(item.id)} className="py-4 bg-red-500 text-white rounded-2xl font-black italic uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 hover:bg-red-600 transition-all outline-none"><Trash2 size={16} /> Löschen</button>
-                                </div>
-                             </div>
-                          </div>
-                        ))}
-                     </div>
-                   ) : (
-                      <div className="py-32 text-center rounded-[4rem] bg-foreground/5 border border-white/5 shadow-inner">
-                         <CheckCircle2 className="mx-auto text-primary/20 mb-6" size={64} />
-                         <p className="text-foreground/20 font-black italic uppercase tracking-[0.5em] text-sm">Alles erledigt. Keine neuen Freigaben.</p>
-                      </div>
-                   )}
+                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                      {pendingMedia.map((item) => (
+                        <div key={item.id} className="group bg-card border border-white/5 rounded-[3rem] overflow-hidden flex flex-col shadow-2xl">
+                           <img src={item.url} onClick={() => setSelectedImage(item)} className="aspect-video object-cover cursor-pointer" />
+                           <div className="p-8 space-y-6">
+                              <div className="flex items-center justify-between"><div className="flex items-center gap-3"><div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-black italic text-xs">{item.userName?.[0]}</div><span className="text-xs font-black italic uppercase text-white/40">{item.userName}</span></div><span className="text-[8px] font-black uppercase text-amber-500 italic tracking-widest">Pending</span></div>
+                              <div className="grid grid-cols-2 gap-4">
+                                 <button onClick={() => handleApprove(item.id)} className="py-4 bg-primary text-secondary rounded-2xl font-black italic uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 hover:scale-105 transition-all"><Check size={16} /> Freigeben</button>
+                                 <button onClick={() => handleDeleteMedia(item.id)} className="py-4 bg-red-500 text-white rounded-2xl font-black italic uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 hover:bg-red-600 transition-all"><Trash2 size={16} /> Löschen</button>
+                              </div>
+                           </div>
+                        </div>
+                      ))}
+                   </div>
                 </motion.section>
               )}
 
               {isAdmin && activeTab === "admin" && (
                 <motion.section key="admin" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
                    <div className="bg-card border border-white/5 rounded-[3.5rem] p-8 md:p-12 space-y-12 shadow-2xl">
-                      <div className="flex items-center gap-8 text-white">
-                         <div className="p-6 bg-foreground/10 rounded-[2rem]"><ShieldAlert size={40} /></div>
-                         <h2 className="text-3xl font-black italic uppercase">Netzwerk Admin</h2>
-                      </div>
+                      <div className="flex items-center gap-8 text-white"><div className="p-6 bg-foreground/10 rounded-[2rem]"><ShieldAlert size={40} /></div><h2 className="text-3xl font-black italic uppercase">Netzwerk Admin</h2></div>
                       <div className="grid md:grid-cols-2 gap-12">
                          <div className="p-10 bg-foreground/5 rounded-[3rem] border border-white/5">
-                            <h3 className="text-xs font-black uppercase italic tracking-[0.3em] text-primary mb-6">User Nodes</h3>
-                            <div className="space-y-4 max-h-[300px] overflow-y-auto custom-scrollbar pr-4">
-                               {group.members.map((m: any, i: number) => (
-                                 <div key={i} className="p-5 bg-card border border-white/5 rounded-xl flex justify-between items-center">
-                                    <span className="text-[10px] font-black italic uppercase text-foreground/50">{m.userId.slice(0, 16)}...</span>
-                                    <span className="text-[8px] font-black uppercase text-primary bg-primary/10 px-2 py-1 rounded">{group.adminId === m.userId ? 'OWNER' : 'GUEST'}</span>
-                                 </div>
-                               ))}
+                            <h3 className="text-xs font-black uppercase italic tracking-[0.3em] text-primary mb-6">User Nodes & Roles</h3>
+                            <div className="space-y-4 max-h-[400px] overflow-y-auto custom-scrollbar pr-4">
+                               {group.members.map((m: any, i: number) => {
+                                 const isUserMod = group.moderatorIds?.includes(m.userId);
+                                 const isUserOwner = group.adminId === m.userId;
+                                 return (
+                                   <div key={i} className="p-5 bg-card border border-white/5 rounded-2xl flex justify-between items-center transition-all hover:border-white/10">
+                                      <div className="flex flex-col">
+                                         <span className="text-[10px] font-black italic uppercase text-white">{m.userId.slice(0, 16)}...</span>
+                                         <span className="text-[8px] font-black uppercase text-foreground/30 italic tracking-widest">{isUserOwner ? 'PRIMARY ADMIN' : isUserMod ? 'MODERATOR' : 'GUEST NODE'}</span>
+                                      </div>
+                                      {!isUserOwner && (
+                                        <button 
+                                          onClick={() => handleToggleModerator(m.userId, !!isUserMod)}
+                                          className={`p-3 rounded-xl transition-all ${isUserMod ? 'bg-amber-500 text-black' : 'bg-white/5 text-white/40 hover:bg-white/10 hover:text-white'}`}
+                                        >
+                                          <ShieldCheck size={18} />
+                                        </button>
+                                      )}
+                                   </div>
+                                 );
+                               })}
                             </div>
                          </div>
                          <div className="p-10 bg-red-500/5 rounded-[3rem] border border-red-500/10 space-y-8">
@@ -366,29 +357,36 @@ export default function GroupPage() {
         </main>
       </div>
 
-      {/* MODALS & OVERLAYS */}
+      {/* --- LIGHTBOX VIEWER --- */}
+      <AnimatePresence>
+        {selectedImage && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[2000] bg-black/95 backdrop-blur-2xl flex items-center justify-center p-4">
+             <button onClick={() => setSelectedImage(null)} className="absolute top-8 right-8 p-4 bg-white/10 text-white rounded-full hover:bg-white/20 transition-all z-[2100]"><X size={32} /></button>
+             <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} className="relative max-w-5xl w-full max-h-[85vh] flex flex-col items-center">
+                <img src={selectedImage.url} className="max-w-full max-h-[75vh] object-contain rounded-3xl shadow-2xl" />
+                <div className="mt-8 flex items-center gap-6">
+                   <div className="flex flex-col text-left">
+                      <span className="text-[8px] font-black uppercase text-primary tracking-widest italic">Captured by</span>
+                      <span className="text-2xl font-black italic uppercase text-white tracking-tighter">{selectedImage.userName}</span>
+                   </div>
+                   <button onClick={() => handleDownload(selectedImage.url, `${group.name}-${selectedImage.userName}.jpg`)} className="px-8 py-4 bg-primary text-secondary rounded-2xl font-black italic uppercase tracking-widest text-[10px] flex items-center gap-3 hover:scale-105 transition-all"><Download size={18} /> Download High-Res</button>
+                </div>
+             </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* --- MODALS --- */}
       <AnimatePresence>
         {isQrOpen && (
           <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsQrOpen(false)} className="absolute inset-0 bg-black/95 backdrop-blur-3xl" />
-             <motion.div initial={{ opacity: 0, scale: 0.9, y: 50 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9 }} className="relative bg-white text-black w-full max-w-lg shadow-2xl rounded-[3.5rem] overflow-hidden flex flex-col max-h-[90vh]">
-                <div className="flex-1 overflow-y-auto p-10 space-y-12">
-                   <div className="text-center space-y-4">
-                      <h3 className="text-5xl font-black italic uppercase tracking-tighter text-slate-900 leading-none">Einladung zur <br /> <span className="text-slate-400">Qloud.</span></h3>
-                   </div>
-                   <p className="text-center font-medium italic text-slate-500 leading-relaxed max-w-xs mx-auto">
-                     Scanne diesen Code, um dieser Qloud beizutreten und deine Momente zu teilen.
-                   </p>
+             <motion.div initial={{ opacity: 0, scale: 0.9, y: 50 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9 }} className="relative bg-white text-black w-full max-w-lg shadow-2xl rounded-[3.5rem] overflow-hidden flex flex-col">
+                <div className="p-10 space-y-12 overflow-y-auto">
+                   <h3 className="text-5xl font-black italic uppercase tracking-tighter text-slate-900 leading-none text-center">Join the <br /> <span className="text-slate-400">Qloud.</span></h3>
                    <div className="flex justify-center flex-col items-center gap-8">
-                      <div className="bg-white p-8 rounded-[3rem] shadow-xl border-4 border-slate-50">
-                        <QRCodeSVG value={window.location.href} size={220} level="H" />
-                      </div>
-                      <div className="bg-slate-50 p-6 rounded-3xl w-full border border-slate-100 flex items-center justify-between">
-                         <code className="text-[10px] font-bold text-slate-400 truncate mr-4">{window.location.href}</code>
-                         <button onClick={copyInviteLink} className={`p-3 rounded-xl transition-all ${copied ? 'bg-green-500 text-white' : 'bg-white text-slate-900 shadow-sm'}`}>
-                            {copied ? <Check size={18} /> : <Copy size={18} />}
-                         </button>
-                      </div>
+                      <div className="bg-white p-8 rounded-[3rem] shadow-xl border-4 border-slate-50"><QRCodeSVG value={window.location.href} size={220} level="H" /></div>
+                      <div className="bg-slate-50 p-6 rounded-3xl w-full border border-slate-100 flex items-center justify-between"><code className="text-[10px] font-bold text-slate-400 truncate mr-4">{window.location.href}</code><button onClick={copyInviteLink} className={`p-3 rounded-xl transition-all ${copied ? 'bg-green-500 text-white' : 'bg-white text-slate-900 shadow-sm'}`}>{copied ? <Check size={18} /> : <Copy size={18} />}</button></div>
                    </div>
                 </div>
                 <div className="p-8 bg-slate-50 border-t border-slate-100 grid grid-cols-2 gap-4">
@@ -402,15 +400,8 @@ export default function GroupPage() {
 
       <style jsx global>{`
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.05); border-radius: 10px; }
-        @media print {
-           body * { visibility: hidden; }
-           #final-print-master, #final-print-master * { visibility: visible; }
-           #final-print-master { display: block; position: fixed; left: 0; top: 0; width: 100%; text-align: center; background: white; height: 100vh; padding-top: 5cm; }
-        }
       `}</style>
     </SiteLayoutClient>
   );
