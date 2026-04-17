@@ -11,6 +11,7 @@ import {
   deleteDoc,
   addDoc,
   updateDoc,
+  setDoc,
   serverTimestamp,
   orderBy,
   arrayUnion,
@@ -23,8 +24,6 @@ import { revalidatePath } from "next/cache";
  * Speichert Metadaten für hochgeladene Medien in einer Gruppe.
  */
 export async function saveMediaMetadataAction(data: { url: string, groupId: string, userId: string, userName: string }) {
-  console.log("💾 SPEICHERE CLOUD-METADATEN:", data.url.slice(0, 30) + "...");
-
   if (!data.url || !data.groupId) return { success: false, error: "Fehlende Daten" };
 
   try {
@@ -46,16 +45,23 @@ export async function saveMediaMetadataAction(data: { url: string, groupId: stri
 /**
  * Erstellt eine neue Gruppe in Firestore.
  */
-export async function createGroup(data: { name: string, description?: string, adminId: string }) {
+export async function createGroup(data: { name: string, description?: string, adminId: string, adminName?: string }) {
   try {
     const groupRef = await addDoc(collection(db, "groups"), {
       name: data.name,
       description: data.description || "",
       adminId: data.adminId,
       memberIds: [data.adminId],
-      moderatorIds: [], // Startet ohne Moderatoren
+      moderatorIds: [],
       memberCount: 1,
       createdAt: serverTimestamp()
+    });
+
+    // Erstelle Admin-Profil in der Subcollection
+    await setDoc(doc(db, "groups", groupRef.id, "members", data.adminId), {
+      name: data.adminName || "Admin",
+      role: "admin",
+      joinedAt: serverTimestamp()
     });
 
     revalidatePath("/modules/qloud");
@@ -85,7 +91,6 @@ export async function getGroupsForUser(userId: string) {
         name: data.name,
         description: data.description,
         adminId: data.adminId,
-        moderatorIds: data.moderatorIds || [],
         _count: {
           members: data.memberCount || 1
         }
@@ -98,7 +103,7 @@ export async function getGroupsForUser(userId: string) {
 }
 
 /**
- * Holt Details einer einzelnen Gruppe.
+ * Holt Details einer einzelnen Gruppe inklusive aller Mitglieder-Profile.
  */
 export async function getGroupDetails(id: string) {
   try {
@@ -108,11 +113,18 @@ export async function getGroupDetails(id: string) {
     if (!docSnap.exists()) return null;
 
     const data = docSnap.data();
+    
+    // Mitglieder aus Subcollection laden
+    const membersSnap = await getDocs(collection(db, "groups", id, "members"));
+    const members = membersSnap.docs.map(d => ({
+      userId: d.id,
+      ...d.data()
+    }));
+
     return {
       id: docSnap.id,
       ...data,
-      moderatorIds: data.moderatorIds || [],
-      members: data.memberIds?.map((m: string) => ({ userId: m })) || []
+      members: members // Jetzt mit Namen und Rollen!
     };
   } catch (error) {
     console.error("Error fetching group details:", error);
@@ -123,13 +135,20 @@ export async function getGroupDetails(id: string) {
 /**
  * Fügt einen Benutzer als Mitglied zu einer Gruppe hinzu (Auto-Join).
  */
-export async function joinGroupAction(groupId: string, userId: string) {
+export async function joinGroupAction(groupId: string, userId: string, userName: string) {
   try {
     const groupRef = doc(db, "groups", groupId);
     const groupSnap = await getDoc(groupRef);
 
     if (!groupSnap.exists()) return { success: false, error: "Gruppe nicht gefunden" };
     
+    // Upsert im Mitglieder-Verzeichnis (aktualisiert auch den Namen)
+    await setDoc(doc(db, "groups", groupId, "members", userId), {
+      name: userName || "Unbekannter Node",
+      role: "member",
+      joinedAt: serverTimestamp()
+    }, { merge: true });
+
     const data = groupSnap.data();
     if (data.memberIds && data.memberIds.includes(userId)) {
       return { success: true, alreadyMember: true };
@@ -156,9 +175,18 @@ export async function joinGroupAction(groupId: string, userId: string) {
 export async function toggleModeratorAction(groupId: string, userId: string, isCurrentlyMod: boolean) {
   try {
     const groupRef = doc(db, "groups", groupId);
+    const memberRef = doc(db, "groups", groupId, "members", userId);
+
+    // 1. In der Hauptliste (für Abfragen)
     await updateDoc(groupRef, {
       moderatorIds: isCurrentlyMod ? arrayRemove(userId) : arrayUnion(userId)
     });
+
+    // 2. Im Profil (für Anzeige)
+    await updateDoc(memberRef, {
+      role: isCurrentlyMod ? "member" : "moderator"
+    });
+
     revalidatePath(`/modules/qloud/${groupId}`);
     return { success: true };
   } catch (error: any) {
