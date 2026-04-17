@@ -99,7 +99,7 @@ export default function GroupPage() {
       }
     });
 
-    const unsubAuth = auth.onAuthStateChanged((u) => {
+    const unsubAuth = auth.onAuthStateChanged((u: any) => {
         if (u) setUser(u);
     });
 
