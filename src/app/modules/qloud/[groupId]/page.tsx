@@ -214,7 +214,7 @@ export default function GroupPage() {
                <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="w-full max-w-xl bg-card border border-border rounded-[2.5rem] md:rounded-[4rem] p-6 md:p-12 text-center shadow-2xl space-y-8 md:space-y-10">
                   <div className="flex justify-center">
                      <div className="p-6 md:p-10 bg-primary/10 rounded-[2rem] md:rounded-[2.5rem] text-primary relative">
-                        <Lock size={48} md:size={64} />
+                        <Lock className="w-12 h-12 md:w-16 md:h-16" />
                         <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full"></div>
                      </div>
                   </div>
