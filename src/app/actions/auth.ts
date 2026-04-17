@@ -24,41 +24,46 @@ export async function decrypt(input: string): Promise<any> {
   return payload;
 }
 
+export async function createSession(userData: { id: string; username: string }) {
+  const expires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+  const session = await encrypt({ 
+    userId: userData.id, 
+    username: userData.username, 
+    expires 
+  });
+
+  // Save the session in a cookie
+  (await cookies()).set("session", session, { 
+    expires, 
+    httpOnly: true, 
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/"
+  });
+
+  return { success: true };
+}
+
 export async function login(formData: FormData) {
   const username = formData.get("username") as string;
   const password = formData.get("password") as string;
 
-  // DATABASE BYPASS: In this first deploy, we rely solely on the authentication attempt.
-  // We mock a user object since we don't have a DB user table yet.
+  // This is a legacy fallback, usually we use createSession after Firebase login
   const user = { id: "mock-admin", username: username || "admin" };
-
-  /* 
-  const user = await prisma.user.findUnique({
-    where: { username },
-  });
-
-  if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
-    return { success: false, message: "Ungültiger Benutzername oder Passwort." };
-  }
-  */
-
-  // Create the session
-  const expires = new Date(Date.now() + 24 * 60 * 60 * 1000);
-  const session = await encrypt({ userId: user.id, username: user.username, expires });
-
-  // Save the session in a cookie
-  (await cookies()).set("session", session, { expires, httpOnly: true });
-
-  return { success: true, message: "" };
+  return await createSession(user);
 }
 
 export async function logout() {
   // Destroy the session
-  (await cookies()).set("session", "", { expires: new Date(0) });
+  (await cookies()).set("session", "", { expires: new Date(0), path: "/" });
 }
 
 export async function getSession() {
   const session = (await cookies()).get("session")?.value;
   if (!session) return null;
-  return await decrypt(session);
+  try {
+    return await decrypt(session);
+  } catch (error) {
+    return null;
+  }
 }

@@ -12,6 +12,7 @@ import {
 } from "firebase/auth";
 import { auth, googleProvider } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
+import { createSession } from "@/app/actions/auth";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   ShieldCheck, 
@@ -68,7 +69,11 @@ export default function LoginPage() {
     if (!auth) return;
     setIsPending(true);
     try {
-      await signInWithPopup(auth, googleProvider);
+      const result = await signInWithPopup(auth, googleProvider);
+      await createSession({ 
+        id: result.user.uid, 
+        username: result.user.email || result.user.displayName || "Google User" 
+      });
       router.push("/dashboard");
     } catch (err: any) {
       setError("Google Authentifizierung fehlgeschlagen.");
@@ -80,7 +85,8 @@ export default function LoginPage() {
     if (!auth) return;
     setIsPending(true);
     try {
-      await signInAnonymously(auth);
+      const result = await signInAnonymously(auth);
+      await createSession({ id: result.user.uid, username: "Gast-User" });
       router.push("/dashboard");
     } catch (err: any) {
       setError("Gast-Login fehlgeschlagen.");
@@ -95,9 +101,11 @@ export default function LoginPage() {
     setError("");
     try {
       if (isRegistering) {
-        await createUserWithEmailAndPassword(auth, email, password);
+        const result = await createUserWithEmailAndPassword(auth, email, password);
+        await createSession({ id: result.user.uid, username: result.user.email || email });
       } else {
-        await signInWithEmailAndPassword(auth, email, password);
+        const result = await signInWithEmailAndPassword(auth, email, password);
+        await createSession({ id: result.user.uid, username: result.user.email || email });
       }
       router.push("/dashboard");
     } catch (err: any) {
@@ -145,7 +153,11 @@ export default function LoginPage() {
     if (!confirmationResult || !verificationCode) return;
     setIsPending(true);
     try {
-      await confirmationResult.confirm(verificationCode);
+      const result = await confirmationResult.confirm(verificationCode);
+      await createSession({ 
+        id: result.user?.uid || "phone-user", 
+        username: result.user?.phoneNumber || "Phone User" 
+      });
       router.push("/dashboard");
     } catch (err: any) {
       setError("Falscher Verifizierungs-Code.");
