@@ -14,6 +14,8 @@ import {
   addDoc,
   serverTimestamp
 } from "firebase/firestore";
+import { prisma } from "@/lib/prisma";
+import { revalidatePath } from "next/cache";
 
 export async function saveMediaMetadataAction(data: { url: string, groupId: string, userId: string, userName: string }) {
   console.log("💾 SPEICHERE CLOUD-METADATEN:", data.url.slice(0, 30) + "...");
