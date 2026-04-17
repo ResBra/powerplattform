@@ -61,7 +61,7 @@ export default function GroupPage() {
   // 1. Initial Load & Auto-Join
   useEffect(() => {
     async function init() {
-      const details = await getGroupDetails(groupId as string);
+      const details = await getGroupDetails(groupId as string) as any;
       if (!details) return router.push("/modules/qloud");
       setGroup(details);
       
