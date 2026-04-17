@@ -8,42 +8,45 @@ interface QrScannerProps {
 }
 
 export default function QrScanner({ onScan }: QrScannerProps) {
-  const scannerRef = useRef<Html5QrcodeScanner | null>(null);
+  const scannerRef = useRef<Html5Qrcode | null>(null);
 
   useEffect(() => {
-    // Initialisiere den Scanner nur ein Mal
-    if (!scannerRef.current) {
-      scannerRef.current = new Html5QrcodeScanner(
-        "qr-reader",
-        { 
-          fps: 10, 
-          qrbox: { width: 250, height: 250 },
-          aspectRatio: 1.0
-        },
-        /* verbose= */ false
-      );
+    const html5QrCode = new Html5Qrcode("qr-reader");
+    scannerRef.current = html5QrCode;
 
-      scannerRef.current.render(
-        (decodedText) => {
-          onScan(decodedText);
-        },
-        (error) => {
-          // Stilles Ignorieren von Scan-Fehlern (normales Verhalten beim Suchen)
-        }
-      );
-    }
+    const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+
+    // Start scanning with back camera (environment facing)
+    html5QrCode.start(
+      { facingMode: "environment" }, 
+      config,
+      (decodedText) => {
+        onScan(decodedText);
+      },
+      (errorMessage) => {
+        // Ignored during search
+      }
+    ).catch((err) => {
+      console.error("Unable to start scanning", err);
+      // Fallback to any available camera if environment fails
+      html5QrCode.start({ facingMode: "user" }, config, (text) => onScan(text), () => {});
+    });
 
     return () => {
       if (scannerRef.current) {
-        scannerRef.current.clear().catch(err => console.error("Scanner cleanup failed", err));
-        scannerRef.current = null;
+        scannerRef.current.stop().then(() => {
+          scannerRef.current?.clear();
+        }).catch(err => console.error("Cleanup failed", err));
       }
     };
   }, [onScan]);
 
   return (
-    <div className="w-full overflow-hidden rounded-[2rem] border-4 border-primary/20 bg-black shadow-2xl">
-      <div id="qr-reader" className="w-full" />
+    <div className="w-full overflow-hidden rounded-[3rem] border-4 border-primary/20 bg-black shadow-2xl relative">
+      <div id="qr-reader" className="w-full aspect-square" />
+      <div className="absolute inset-0 border-[40px] border-black/40 pointer-events-none">
+         <div className="w-full h-full border-2 border-primary/50 animate-pulse" />
+      </div>
     </div>
   );
 }

@@ -132,10 +132,12 @@ export default function SiteLayoutClient({ children, activePage, settings }: Sit
 
       {/* MOBILE HEADER */}
       <header className="lg:hidden h-20 bg-black fixed top-0 inset-x-0 z-[110] flex items-center justify-between px-6 border-b border-white/5 shadow-xl">
-         <Link href="/dashboard" className="font-black italic uppercase tracking-tighter text-lg flex items-center gap-2 text-white">
-            <div style={signatureGradient} className="w-8 h-8 rounded shadow-sm flex items-center justify-center"><Box size={16} className="text-secondary" /></div>
-            <span>Power<span className="text-primary">Node.</span></span>
-         </Link>
+          <Link href="/dashboard" className="font-black italic uppercase tracking-tighter text-lg flex items-center gap-2 text-white">
+             <div style={signatureGradient} className="w-8 h-8 rounded shadow-sm flex items-center justify-center overflow-hidden">
+                <img src="/icon.png" alt="Logo" className="w-5 h-5 object-contain" />
+             </div>
+             <span>Power<span className="text-primary">Node.</span></span>
+          </Link>
          <div className="flex gap-2 text-white">
             <button onClick={() => setIsSettingsOpen(true)} className="p-3 bg-white/10 rounded-2xl text-white/70 hover:bg-white/20 transition-all"><Settings size={20} /></button>
             <button onClick={() => setIsOpen(true)} className="p-3 bg-white/20 rounded-2xl text-white hover:bg-white/30 transition-all"><Menu size={24} /></button>
