@@ -74,7 +74,7 @@ export default function SiteLayoutClient({ children, activePage, settings }: Sit
     const config = { t: theme, p1: primary1, p2: primary2, bg: bgImage, op: bgOpacity.toString() };
     Object.entries(updates).forEach(([key, value]) => {
       localStorage.setItem(key, value);
-      if (key === "theme") { config.t = value; setTheme(value as any); }
+      if (key === "theme") { config.t = value as "dark" | "light"; setTheme(value as any); }
       if (key === "p1") { config.p1 = value; setPrimary1(value); }
       if (key === "p2") { config.p2 = value; setPrimary2(value); }
       if (key === "bg") { config.bg = value; setBgImage(value); }
