@@ -76,7 +76,12 @@ export default function LoginPage() {
       });
       router.push("/dashboard");
     } catch (err: any) {
-      setError("Google Authentifizierung fehlgeschlagen.");
+      console.error("DEBUG AUTH ERROR:", err.code);
+      if (err.code === "auth/unauthorized-domain") {
+        setError("Domain nicht autorisiert: Bitte 'powerplattform.vercel.app' in der Firebase Konsole hinzufügen.");
+      } else {
+        setError("Google Authentifizierung fehlgeschlagen.");
+      }
       setIsPending(false);
     }
   }
