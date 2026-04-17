@@ -6,7 +6,7 @@ import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
-const secretKey = "secret"; // In Production: process.env.JWT_SECRET
+const secretKey = process.env.JWT_SECRET || "default_development_secret_key_123";
 const key = new TextEncoder().encode(secretKey);
 
 export async function encrypt(payload: any) {
