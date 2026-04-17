@@ -173,6 +173,23 @@ export default function GroupPage() {
     await toggleModeratorAction(groupId as string, targetUserId, currentIsMod);
   };
 
+  const handleDeleteGroup = async () => {
+    if (!window.confirm("Bist du sicher? Alle Daten dieser Qloud werden permanent gelöscht.")) return;
+    const res = await deleteGroup(groupId as string, user.uid);
+    if (res.success) router.push("/modules/qloud");
+  };
+
+  const handleNativeShare = async () => {
+    const shareData = { title: group.name, text: `Komm in meine Qloud Gruppe '${group.name}'!`, url: window.location.href };
+    try { if (navigator.share) { await navigator.share(shareData); } else { copyInviteLink(); } } catch (err) { console.log(err); }
+  };
+
+  const copyInviteLink = () => {
+    navigator.clipboard.writeText(window.location.href);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   const handleDownload = async (url: string, filename: string) => {
     try {
       const response = await fetch(url);
