@@ -69,6 +69,7 @@ export default function LoginPage() {
     if (!auth) return;
     setIsPending(true);
     try {
+      googleProvider.setCustomParameters({ prompt: 'select_account' });
       const result = await signInWithPopup(auth, googleProvider);
       await createSession({ 
         id: result.user.uid, 
