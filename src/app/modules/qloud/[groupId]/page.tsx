@@ -310,11 +310,11 @@ export default function GroupPage() {
                       {approvedMedia.map((item) => (
                         <motion.div layout initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} key={item.id} className="group relative aspect-square bg-foreground/5 rounded-[2.5rem] overflow-hidden border border-white/5 shadow-lg cursor-pointer">
                            <img src={item.url} onClick={() => setSelectedImage(item)} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" loading="lazy" />
-                           <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                           <div className="absolute top-4 right-4 flex gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                               <button onClick={() => handleDownload(item.url, `${group.name}-${item.userName}.jpg`)} className="p-2.5 bg-black/60 backdrop-blur-md text-white rounded-xl hover:bg-primary hover:text-secondary transition-all"><Download size={14} /></button>
                               {isModerator && <button onClick={() => handleDeleteMedia(item.id)} className="p-2.5 bg-red-500/80 backdrop-blur-md text-white rounded-xl hover:bg-red-600 transition-all"><Trash2 size={14} /></button>}
                            </div>
-                           <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-6 opacity-0 group-hover:opacity-100 transition-opacity">
+                           <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-6 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                               <p className="text-[10px] font-black text-white italic uppercase tracking-widest flex items-center gap-2"><ImageIcon size={12} /> {item.userName}</p>
                            </div>
                         </motion.div>
