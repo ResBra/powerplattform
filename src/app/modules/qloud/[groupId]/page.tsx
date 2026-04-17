@@ -219,14 +219,14 @@ export default function GroupPage() {
     } catch (error) { window.open(url, '_blank'); }
   };
 
-  if (!group || !user) return <div className="p-20 text-center font-black animate-pulse opacity-10 uppercase tracking-widest text-white">Authorizing...</div>;
+  if (!group || !user) return <div className="p-20 text-center font-black animate-pulse opacity-10 uppercase tracking-widest text-foreground">Authorizing...</div>;
 
   // 🔴 LOCK SCREEN FOR NON-MEMBERS
   if (!isMember) {
     return (
       <SiteLayoutClient activePage="qloud">
         <div className="min-h-[70vh] flex items-center justify-center p-6">
-           <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="w-full max-w-xl bg-card border border-white/5 rounded-[4rem] p-12 text-center shadow-2xl space-y-10">
+           <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="w-full max-w-xl bg-card border border-border rounded-[4rem] p-12 text-center shadow-2xl space-y-10">
               <div className="flex justify-center">
                  <div className="p-10 bg-primary/10 rounded-[2.5rem] text-primary relative">
                     <Lock size={64} />
@@ -234,7 +234,7 @@ export default function GroupPage() {
                  </div>
               </div>
               <div className="space-y-4">
-                 <h1 className="text-5xl font-black italic uppercase tracking-tighter text-white">{group.name}</h1>
+                 <h1 className="text-5xl font-black italic uppercase tracking-tighter text-foreground">{group.name}</h1>
                  <p className="text-xs font-black uppercase text-primary italic tracking-[0.3em]">Authorized Members Only</p>
                  <p className="text-foreground/40 text-sm italic max-w-sm mx-auto">Dieser Node ist verschlüsselt. Bitte sende eine Beitrittsanfrage an den Admin, um Zugriff auf den Content zu erhalten.</p>
               </div>
@@ -247,14 +247,14 @@ export default function GroupPage() {
                     <button 
                        onClick={handleRequestAccess}
                        disabled={isRequesting}
-                       className="w-full py-8 bg-white text-black rounded-[2rem] font-black italic uppercase text-sm tracking-widest hover:scale-105 transition-all shadow-xl flex items-center justify-center gap-4"
+                       className="w-full py-8 bg-foreground text-background rounded-[2rem] font-black italic uppercase text-sm tracking-widest hover:scale-105 transition-all shadow-xl flex items-center justify-center gap-4"
                     >
                        {isRequesting ? <Clock className="animate-spin" /> : <UserPlus size={24} />} 
                        Zutritt Anfordern
                     </button>
                  )}
               </div>
-              <button onClick={() => router.push("/modules/qloud")} className="text-[10px] font-black uppercase text-foreground/20 italic tracking-widest hover:text-white transition-colors">Zurück zum Dashboard</button>
+              <button onClick={() => router.push("/modules/qloud")} className="text-[10px] font-black uppercase text-foreground/20 italic tracking-widest hover:text-foreground transition-colors">Zurück zum Dashboard</button>
            </motion.div>
         </div>
       </SiteLayoutClient>
@@ -268,22 +268,22 @@ export default function GroupPage() {
     <SiteLayoutClient activePage="qloud">
       {/* REST OF THE UI AS BEFORE... */}
       <div className="space-y-8 pb-32 relative px-4 md:px-0">
-        <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-8 border-b border-white/5">
+        <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-8 border-b border-border">
            <div className="flex items-center gap-6">
               <button onClick={() => router.push("/modules/qloud")} className="p-4 bg-foreground/5 rounded-2xl text-foreground/40 hover:bg-foreground/10 transition-colors"><ArrowLeft size={20} /></button>
               <div>
-                 <h1 className="text-3xl md:text-5xl font-black text-white italic uppercase">{group.name}</h1>
+                 <h1 className="text-3xl md:text-5xl font-black text-foreground italic uppercase">{group.name}</h1>
                  <p className="text-[10px] font-black uppercase text-primary italic tracking-widest mt-1">Authorized Access Network</p>
               </div>
            </div>
-           <button onClick={() => setIsQrOpen(true)} className="px-8 py-4 bg-primary text-secondary rounded-2xl flex items-center gap-3 text-[10px] font-black italic uppercase shadow-xl"><QrCode size={18} /> Invite guests</button>
+           <button onClick={() => setIsQrOpen(true)} className="px-8 py-4 bg-primary text-secondary rounded-2xl flex items-center gap-3 text-[10px] font-black italic uppercase shadow-xl shadow-primary/20"><QrCode size={18} /> Invite guests</button>
         </header>
 
-        <nav className="flex items-center gap-2 p-1.5 bg-foreground/5 rounded-2xl border border-white/5 w-fit overflow-x-auto max-w-full">
+        <nav className="flex items-center gap-2 p-1.5 bg-foreground/5 rounded-2xl border border-border w-fit overflow-x-auto max-w-full">
            <button onClick={() => setActiveTab("chat")} className={`px-8 py-4 rounded-xl text-[10px] font-black italic uppercase transition-all ${activeTab === 'chat' ? 'bg-primary text-secondary' : 'text-foreground/40'}`}>Feed</button>
            <button onClick={() => setActiveTab("gallery")} className={`px-8 py-4 rounded-xl text-[10px] font-black italic uppercase transition-all ${activeTab === 'gallery' ? 'bg-primary text-secondary' : 'text-foreground/40'}`}>Galerie {approvedMedia.length > 0 && `(${approvedMedia.length})`}</button>
            {isModerator && <button onClick={() => setActiveTab("moderation")} className={`px-8 py-4 rounded-xl text-[10px] font-black italic uppercase transition-all ${activeTab === 'moderation' ? 'bg-amber-500 text-black shadow-lg animate-pulse' : 'text-amber-500/40'}`}>Moderation {pendingMedia.length > 0 && <span className="text-[8px]">{pendingMedia.length}</span>}</button>}
-           {isAdmin && <button onClick={() => setActiveTab("admin")} className={`px-8 py-4 rounded-xl text-[10px] font-black italic uppercase transition-all ${activeTab === 'admin' ? 'bg-white text-black' : 'text-foreground/40'}`}>Admin</button>}
+           {isAdmin && <button onClick={() => setActiveTab("admin")} className={`px-8 py-4 rounded-xl text-[10px] font-black italic uppercase transition-all ${activeTab === 'admin' ? 'bg-foreground text-background shadow-lg' : 'text-foreground/40'}`}>Admin</button>}
         </nav>
 
         <main className="min-h-[400px]">
@@ -293,7 +293,7 @@ export default function GroupPage() {
                    <div className="flex-1 p-8 overflow-y-auto space-y-6">
                       {messages.map((msg, idx) => (
                          <div key={idx} className={`flex flex-col ${msg.userId === user?.uid ? 'items-end' : 'items-start'}`}>
-                            <div className={`p-5 rounded-[2.5rem] ${msg.userId === user?.uid ? 'bg-primary text-secondary' : 'bg-foreground/5 text-foreground'}`}>
+                            <div className={`p-5 rounded-[2.5rem] shadow-sm ${msg.userId === user?.uid ? 'bg-primary text-secondary' : 'bg-foreground/5 text-foreground border border-border'}`}>
                                <p className="text-[7px] font-black uppercase mb-1 opacity-40 italic">{msg.userName}</p>
                                <p className="text-sm font-medium">{msg.content}</p>
                             </div>
@@ -301,29 +301,29 @@ export default function GroupPage() {
                       ))}
                       <div ref={chatEndRef} />
                    </div>
-                   <form onSubmit={sendMessage} className="p-8 bg-foreground/[0.02] border-t border-white/5 flex gap-4">
-                      <input type="text" value={newMessage} onChange={(e) => setNewMessage(e.target.value)} placeholder="DEINE NACHRICHT..." className="flex-1 bg-card border border-white/5 rounded-2xl px-10 py-5 text-xs font-black italic outline-none focus:border-primary transition-all text-white" />
-                      <button className="p-6 bg-primary text-secondary rounded-2xl shadow-xl"><Send size={24} /></button>
+                   <form onSubmit={sendMessage} className="p-8 bg-foreground/[0.02] border-t border-border flex gap-4">
+                      <input type="text" value={newMessage} onChange={(e) => setNewMessage(e.target.value)} placeholder="DEINE NACHRICHT..." className="flex-1 bg-card border border-border rounded-2xl px-10 py-5 text-xs font-black italic outline-none focus:border-primary transition-all text-foreground placeholder:text-foreground/20" />
+                      <button className="p-6 bg-primary text-secondary rounded-2xl shadow-xl shadow-primary/20 hover:scale-105 transition-all"><Send size={24} /></button>
                    </form>
                 </motion.section>
               )}
 
               {activeTab === "gallery" && (
                 <motion.section key="gallery" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-12">
-                   <div className="flex items-center justify-between">
-                      <h2 className="text-3xl font-black italic uppercase text-white">Live-Moments</h2>
-                      <label htmlFor="media-upload" className="px-10 py-5 bg-primary text-secondary rounded-2xl text-xs flex items-center gap-3 cursor-pointer">
+                   <div className="flex items-center justify-between border-b border-border pb-6">
+                      <h2 className="text-3xl font-black italic uppercase text-foreground">Live-Moments</h2>
+                      <label htmlFor="media-upload" className="px-10 py-5 bg-primary text-secondary rounded-2xl text-xs font-black italic uppercase flex items-center gap-3 cursor-pointer shadow-lg shadow-primary/20 hover:scale-105 transition-all">
                          <input type="file" id="media-upload" accept="image/*" className="hidden" onChange={uploadMedia} />
                          {isUploading ? <Clock className="animate-spin" /> : <Upload />} BILD HOCHLADEN
                       </label>
                    </div>
                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
                       {approvedMedia.map((item) => (
-                        <div key={item.id} className="group relative aspect-square bg-foreground/5 rounded-[2.5rem] overflow-hidden">
+                        <div key={item.id} className="group relative aspect-square bg-foreground/5 rounded-[2.5rem] overflow-hidden border border-border shadow-sm">
                            <img src={item.url} onClick={() => setSelectedImage(item)} className="w-full h-full object-cover transition-transform group-hover:scale-110 cursor-pointer" />
                            <div className="absolute top-4 right-4 flex gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
-                              <button onClick={() => handleDownload(item.url, "bild.jpg")} className="p-2.5 bg-black/60 rounded-xl text-white hover:bg-primary hover:text-secondary"><Download size={14} /></button>
-                              {isModerator && <button onClick={() => handleDeleteMedia(item.id)} className="p-2.5 bg-red-500/80 rounded-xl text-white"><Trash2 size={14} /></button>}
+                              <button onClick={() => handleDownload(item.url, "bild.jpg")} className="p-2.5 bg-background/80 backdrop-blur-md rounded-xl text-foreground hover:bg-primary hover:text-secondary shadow-lg"><Download size={14} /></button>
+                              {isModerator && <button onClick={() => handleDeleteMedia(item.id)} className="p-2.5 bg-red-500/80 rounded-xl text-white shadow-lg"><Trash2 size={14} /></button>}
                            </div>
                         </div>
                       ))}
@@ -346,7 +346,7 @@ export default function GroupPage() {
                         <div className="grid md:grid-cols-2 gap-4">
                            {joinRequests.map((req) => (
                              <div key={req.requestId} className="p-6 bg-card border border-primary/20 rounded-3xl flex items-center justify-between">
-                                <div className="flex items-center gap-3 text-white">
+                                <div className="flex items-center gap-3 text-foreground">
                                    <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center font-black italic">{req.userName[0]}</div>
                                    <div className="font-black italic uppercase text-xs">{req.userName}</div>
                                 </div>
@@ -358,48 +358,47 @@ export default function GroupPage() {
                            ))}
                         </div>
                      </div>
-                   )}
-
-                   <div className="bg-card border border-white/5 rounded-[3.5rem] p-12 space-y-12">
-                      <div className="flex items-center gap-8 text-white"><ShieldAlert size={40} /><h2 className="text-3xl font-black italic uppercase">Netzwerk Admin</h2></div>
-                      <div className="p-10 bg-white rounded-[3rem] border-8 border-slate-50 shadow-inner">
-                         <h3 className="text-xs font-black uppercase italic tracking-[0.3em] text-slate-400 mb-8 border-b border-slate-100 pb-4 text-center">Mitglieder-Verzeichnis</h3>
-                         <div className="space-y-6 max-h-[400px] overflow-y-auto">
+                                 <div className="bg-card border border-border rounded-[3.5rem] p-12 space-y-12 shadow-2xl">
+                      <div className="flex items-center gap-8 text-foreground"><ShieldAlert size={40} className="text-primary" /><h2 className="text-3xl font-black italic uppercase">Netzwerk Admin</h2></div>
+                      <div className="p-10 bg-foreground/5 rounded-[3rem] border border-border">
+                         <h3 className="text-xs font-black uppercase italic tracking-[0.3em] text-foreground/40 mb-8 border-b border-border pb-4 text-center">Mitglieder-Verzeichnis</h3>
+                         <div className="space-y-6 max-h-[400px] overflow-y-auto pr-4 custom-scrollbar">
                             {group.members?.map((m: any, i: number) => (
-                               <div key={i} className="p-6 bg-slate-50 border border-slate-100 rounded-[2rem] flex justify-between items-center">
-                                  <div className="flex items-center gap-4 text-slate-900">
-                                     <div className="w-12 h-12 rounded-full bg-slate-200 flex items-center justify-center text-slate-500 font-black italic">{m.name?.[0]}</div>
-                                     <div className="flex flex-col"><span className="text-base font-black italic uppercase">{m.name || "Gast"}</span><span className="text-[9px] font-black uppercase text-slate-400 italic">{m.role}</span></div>
+                               <div key={i} className="p-6 bg-card border border-border rounded-[2rem] flex justify-between items-center shadow-sm hover:border-primary/20 transition-all">
+                                  <div className="flex items-center gap-4 text-foreground">
+                                     <div className="w-12 h-12 rounded-full bg-foreground/10 flex items-center justify-center text-foreground/60 font-black italic">{m.name?.[0]}</div>
+                                     <div className="flex flex-col"><span className="text-base font-black italic uppercase">{m.name || "Gast"}</span><span className="text-[9px] font-black uppercase text-foreground/30 italic tracking-widest">{m.role}</span></div>
                                   </div>
                                   {group.adminId !== m.userId && (
-                                    <button onClick={() => handleToggleModerator(m.userId, m.role === 'moderator')} className={`px-5 py-3 rounded-2xl transition-all text-[10px] font-black uppercase italic ${m.role === 'moderator' ? 'bg-amber-100 text-amber-700' : 'bg-white text-slate-400 border border-slate-200'}`}>Moderator</button>
+                                    <button onClick={() => handleToggleModerator(m.userId, m.role === 'moderator')} className={`px-5 py-3 rounded-2xl transition-all text-[10px] font-black uppercase italic shadow-sm ${m.role === 'moderator' ? 'bg-amber-100 text-amber-700 border border-amber-200' : 'bg-foreground/5 text-foreground/40 border border-border'}`}>Moderator</button>
                                   )}
                                </div>
                             ))}
                          </div>
                       </div>
-                      <div className="pt-12 border-t border-white/5 flex flex-col items-center">
-                         <button onClick={handleDeleteGroup} className="w-full py-8 bg-red-500/10 text-red-500 border border-red-500/20 font-black italic uppercase rounded-[2.5rem] hover:bg-red-500 hover:text-white transition-all">Node permanent löschen</button>
+                      <div className="pt-12 border-t border-border flex flex-col items-center">
+                         <button onClick={handleDeleteGroup} className="w-full py-8 bg-red-500/10 text-red-500 border border-red-500/20 font-black italic uppercase rounded-[2.5rem] hover:bg-red-500 hover:text-white transition-all shadow-sm">Node permanent löschen</button>
                       </div>
                    </div>
+    </div>
                 </motion.section>
               )}
            </AnimatePresence>
         </main>
       </div>
 
-      {/* QR MODAL (SAME AS BEFORE) */}
+      {/* QR MODAL */}
       <AnimatePresence>
         {isQrOpen && (
           <div className="fixed inset-0 z-[1000] flex items-center justify-center p-6">
              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsQrOpen(false)} className="absolute inset-0 bg-black/95 backdrop-blur-3xl" />
-             <motion.div initial={{ opacity: 0, scale: 0.9, y: 50 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9 }} className="relative bg-white text-black w-full max-w-lg shadow-2xl rounded-[3.5rem] p-10">
+             <motion.div initial={{ opacity: 0, scale: 0.9, y: 50 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9 }} className="relative bg-card text-foreground w-full max-w-lg shadow-2xl rounded-[3.5rem] p-10 border border-border">
                 <div className="space-y-12 flex flex-col items-center">
-                   <h3 className="text-4xl font-black italic uppercase tracking-tighter text-slate-900 leading-none text-center">Join the <span className="text-primary italic">Qloud.</span></h3>
-                   <div className="bg-white p-8 rounded-[3rem] shadow-xl border-4 border-slate-50"><QRCodeSVG value={window.location.href} size={220} level="H" /></div>
+                   <h3 className="text-4xl font-black italic uppercase tracking-tighter leading-none text-center">Join the <span className="text-primary italic">Qloud.</span></h3>
+                   <div className="bg-white p-8 rounded-[3rem] shadow-2xl border-4 border-slate-50"><QRCodeSVG value={typeof window !== 'undefined' ? window.location.href : '/'} size={220} level="H" /></div>
                    <div className="w-full space-y-4">
-                      <div className="p-6 bg-slate-50 border border-slate-100 rounded-3xl flex items-center justify-between"><code className="text-[10px] font-bold text-slate-400 truncate mr-4 italic">Identifier: {groupId}</code><button onClick={() => { navigator.clipboard.writeText(window.location.href); setCopied(true); setTimeout(() => setCopied(false), 2000); }} className={`p-4 rounded-xl transition-all ${copied ? 'bg-green-500 text-white' : 'bg-slate-100 text-slate-900'}`}>{copied ? <Check size={20} /> : <Copy size={20} />}</button></div>
-                      <p className="text-center text-[10px] font-black uppercase text-slate-400 italic tracking-widest leading-relaxed">Gäste müssen eine Beitrittsanfrage senden.<br /> Genehmigung erfolgt durch den Admin.</p>
+                      <div className="p-6 bg-foreground/5 border border-border rounded-3xl flex items-center justify-between shadow-inner"><code className="text-[10px] font-bold text-foreground/40 truncate mr-4 italic">Identifier: {groupId}</code><button onClick={() => { navigator.clipboard.writeText(window.location.href); setCopied(true); setTimeout(() => setCopied(false), 2000); }} className={`p-4 rounded-xl transition-all shadow-md ${copied ? 'bg-green-500 text-white' : 'bg-foreground/10 text-foreground'}`}>{copied ? <Check size={20} /> : <Copy size={20} />}</button></div>
+                      <p className="text-center text-[10px] font-black uppercase text-foreground/40 italic tracking-widest leading-relaxed">Gäste müssen eine Beitrittsanfrage senden.<br /> Genehmigung erfolgt durch den Admin.</p>
                    </div>
                 </div>
              </motion.div>
