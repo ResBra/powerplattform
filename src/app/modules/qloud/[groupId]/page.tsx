@@ -380,7 +380,6 @@ export default function GroupPage() {
                          <button onClick={handleDeleteGroup} className="w-full py-8 bg-red-500/10 text-red-500 border border-red-500/20 font-black italic uppercase rounded-[2.5rem] hover:bg-red-500 hover:text-white transition-all shadow-sm">Node permanent löschen</button>
                       </div>
                    </div>
-    </div>
                 </motion.section>
               )}
            </AnimatePresence>
