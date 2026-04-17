@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbo",
-    "build": "prisma generate && next build",
+    "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "cap:init": "npx cap init",
@@ -16,8 +16,6 @@
     "@capacitor/cli": "^7.0.0",
     "@capacitor/core": "^7.0.0",
     "@capacitor/ios": "^7.0.0",
-
-    "@prisma/client": "^5.22.0",
     "@tiptap/react": "^3.22.3",
     "@tiptap/starter-kit": "^3.22.3",
     "@vercel/blob": "^2.3.2",
@@ -45,7 +43,6 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.1",
     "postcss": "^8.5.3",
-    "prisma": "^5.22.0",
     "tailwindcss": "^4.0.9",
     "typescript": "^5"
   }
