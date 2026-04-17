@@ -1,12 +1,12 @@
 {
-  "name": "Power Platform Template",
-  "short_name": "Power App",
-  "id": "power-platform-v1",
-  "description": "Premium Management Engine for Teams and Listings",
+  "name": "Power Platform // Qloud Hub",
+  "short_name": "Qloud Hub",
+  "id": "qloud-hub-v1",
+  "description": "Authorized Social Hub for private Events and Nodes",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#1a4731",
+  "background_color": "#0a0a0a",
+  "theme_color": "#fbff00",
   "icons": [
     {
       "src": "/icon.png",

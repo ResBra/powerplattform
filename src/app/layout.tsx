@@ -23,38 +23,38 @@ export const metadata: Metadata = {
     title: "Power App",
   },
   icons: {
-    icon: "/favicon.ico",
-    shortcut: "/favicon.ico",
+    icon: "/favicon.png",
+    shortcut: "/favicon.png",
     apple: "/apple-icon.png",
   },
   title: {
-    template: "%s | Power Platform",
-    default: "Power Platform | Management & Listings",
+    template: "%s | Qloud Hub",
+    default: "Power Platform // Qloud Hub",
   },
-  description: "Premium Management Engine for Teams and Listings. Optimized for PWA and Mobile UX.",
-  keywords: ["Platform", "Management", "PWA", "Enterprise", "Template"],
-  authors: [{ name: "Power Platform Team" }],
-  creator: "Power Platform Team",
-  publisher: "Power Platform Team",
+  description: "Authorized Social Hub for private Events and Nodes. Optimized for PWA and Mobile UX.",
+  keywords: ["Qloud", "Social", "Hub", "Platform", "Management", "PWA"],
+  authors: [{ name: "Qloud Hub Team" }],
+  creator: "Qloud Hub Team",
+  publisher: "Qloud Hub Team",
   formatDetection: {
     email: false,
     address: false,
     telephone: false,
   },
   openGraph: {
-    title: "Power Platform Template",
-    description: "Premium Management Engine for Teams and Listings.",
+    title: "Power Platform // Qloud Hub",
+    description: "Authorized Social Hub for private Events and Nodes.",
     url: "https://power-app-template.com",
-    siteName: "Power Platform",
+    siteName: "Qloud Hub",
     locale: "de_DE",
     type: "website",
-    images: [{ url: "/banner.jpg", width: 1200, height: 630, alt: "Platform Banner" }],
+    images: [{ url: "/icon-512.png", width: 512, height: 512, alt: "Qloud Hub Logo" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Power Platform Template",
-    description: "Premium Management Engine for Teams and Listings.",
-    images: ["/banner.jpg"],
+    title: "Power Platform // Qloud Hub",
+    description: "Authorized Social Hub for private Events and Nodes.",
+    images: ["/icon-512.png"],
   },
   robots: {
     index: true,
@@ -63,7 +63,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport = {
-  themeColor: "#1a4731",
+  themeColor: "#fbff00",
 };
 
 import CookieConsent from "@/components/CookieConsent";
