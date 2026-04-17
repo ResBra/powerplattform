@@ -16,9 +16,11 @@ import {
   orderBy,
   arrayUnion,
   arrayRemove,
-  increment
+  increment,
+  writeBatch
 } from "firebase/firestore";
 import { revalidatePath } from "next/cache";
+import { del } from "@vercel/blob";
 
 /**
  * Speichert Metadaten für hochgeladene Medien in einer Gruppe.
@@ -134,7 +136,6 @@ export async function getGroupDetails(id: string) {
 
 /**
  * Fügt einen Benutzer als Mitglied zu einer Gruppe hinzu (Auto-Join).
- * WICHTIG: Überschreibt niemals die Rolle ("role"), wenn das Mitglied bereits existiert.
  */
 export async function joinGroupAction(groupId: string, userId: string, userName: string) {
   try {
@@ -144,12 +145,10 @@ export async function joinGroupAction(groupId: string, userId: string, userName:
     const memberSnap = await getDoc(memberRef);
     
     if (memberSnap.exists()) {
-      // NUR DEN NAMEN AKTUALISIEREN, DIE ROLLE SCHÜTZEN!
       await updateDoc(memberRef, {
         name: userName || memberSnap.data().name
       });
     } else {
-      // NEUES MITGLIED ERSTELLEN
       await setDoc(memberRef, {
         name: userName || "Unbekannter Node",
         role: "member",
@@ -186,12 +185,10 @@ export async function toggleModeratorAction(groupId: string, userId: string, isC
     const groupRef = doc(db, "groups", groupId);
     const memberRef = doc(db, "groups", groupId, "members", userId);
 
-    // Atomares Update der Hauptliste
     await updateDoc(groupRef, {
       moderatorIds: isCurrentlyMod ? arrayRemove(userId) : arrayUnion(userId)
     });
 
-    // Atomares Update des Profils
     await updateDoc(memberRef, {
       role: isCurrentlyMod ? "member" : "moderator"
     });
@@ -219,11 +216,19 @@ export async function approveMediaAction(groupId: string, mediaId: string) {
 }
 
 /**
- * Löscht ein Medium (Bild) permanent.
+ * Löscht ein Medium (Bild) permanent inkl. Vercel Blob.
  */
 export async function deleteMediaAction(groupId: string, mediaId: string) {
   try {
     const mediaRef = doc(db, "groups", groupId, "media", mediaId);
+    const mediaSnap = await getDoc(mediaRef);
+    
+    if (mediaSnap.exists()) {
+      const url = mediaSnap.data().url;
+      // Physische Löschung aus dem Speicher
+      await del(url);
+    }
+
     await deleteDoc(mediaRef);
     return { success: true };
   } catch (error: any) {
@@ -233,7 +238,7 @@ export async function deleteMediaAction(groupId: string, mediaId: string) {
 }
 
 /**
- * Löscht eine Gruppe (nur für Admins).
+ * Löscht eine Gruppe permanent inkl. aller Blobs und Subcollections.
  */
 export async function deleteGroup(id: string, userId: string) {
   try {
@@ -243,11 +248,31 @@ export async function deleteGroup(id: string, userId: string) {
     if (!docSnap.exists()) return { error: "Gruppe nicht gefunden" };
     if (docSnap.data().adminId !== userId) return { error: "Nicht autorisiert" };
 
-    await deleteDoc(docRef);
+    // 1. Alle Medien-URLs abrufen für Blob-Cleanup
+    const mediaSnap = await getDocs(collection(db, "groups", id, "media"));
+    const urls = mediaSnap.docs.map(d => d.data().url).filter(Boolean);
+    
+    if (urls.length > 0) {
+      // Physische Löschung aller Bilder aus Vercel Blob
+      await del(urls);
+    }
+
+    // 2. Alle Subcollection-Dokumente löschen (Batch)
+    const batch = writeBatch(db);
+    mediaSnap.docs.forEach(d => batch.delete(d.ref));
+    
+    const membersSnap = await getDocs(collection(db, "groups", id, "members"));
+    membersSnap.docs.forEach(d => batch.delete(d.ref));
+    
+    // 3. Haupt-Dokument löschen
+    batch.delete(docRef);
+    
+    await batch.commit();
+
     revalidatePath("/modules/qloud");
     return { success: true };
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error deleting group:", error);
-    return { error: "Firebase Fehler beim Löschen." };
+    return { error: `Fehler beim Löschen: ${error.message}` };
   }
 }

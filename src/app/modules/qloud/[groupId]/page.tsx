@@ -157,7 +157,8 @@ export default function GroupPage() {
       // 1. Upload zu Vercel Blob
       const newBlob = await upload(file.name, file, { 
         access: 'public', 
-        handleUploadUrl: '/api/upload' 
+        handleUploadUrl: '/api/upload',
+        addRandomSuffix: true
       });
 
       // 2. Metadaten in Firestore speichern
