@@ -129,7 +129,7 @@ export default function SiteLayoutClient({ children, activePage, settings }: Sit
       </motion.aside>
 
       {/* MOBILE HEADER */}
-      <header className="lg:hidden h-20 glass fixed top-0 inset-x-0 z-[110] flex items-center justify-between px-6 border-b border-border shadow-xl">
+      <header className="lg:hidden h-20 bg-black fixed top-0 inset-x-0 z-[110] flex items-center justify-between px-6 border-b border-white/5 shadow-xl">
          <Link href="/dashboard" className="font-black italic uppercase tracking-tighter text-lg flex items-center gap-2">
             <div style={signatureGradient} className="w-8 h-8 rounded shadow-sm flex items-center justify-center"><Box size={16} className="text-secondary" /></div>
             <span>Power<span className="text-primary">Node.</span></span>

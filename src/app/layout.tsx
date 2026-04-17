@@ -63,7 +63,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport = {
-  themeColor: "#fbff00",
+  themeColor: "#000000",
 };
 
 import CookieConsent from "@/components/CookieConsent";
