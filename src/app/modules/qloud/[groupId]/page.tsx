@@ -83,12 +83,30 @@ export default function GroupPage() {
 
     const unsubAuth = auth.onAuthStateChanged((u: any) => {
       setUser(u);
-      const isOwner = u?.uid === group.adminId;
-      const isMod = group.moderatorIds?.includes(u?.uid) || isOwner;
-      setIsAdmin(isOwner);
-      setIsModerator(isMod);
     });
 
+    // 2. REAL-TIME GROUP DATA LISTENER
+    const groupRef = doc(db, "groups", groupId as string);
+    const unsubGroup = onSnapshot(groupRef, (docSnap) => {
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        const details = {
+          id: docSnap.id,
+          ...data,
+          members: data.memberIds?.map((m: string) => ({ userId: m })) || []
+        };
+        setGroup(details);
+
+        // Update Roles based on fresh data
+        const u = auth.currentUser;
+        const isOwner = u?.uid === data.adminId;
+        const isMod = data.moderatorIds?.includes(u?.uid) || isOwner;
+        setIsAdmin(isOwner);
+        setIsModerator(isMod);
+      }
+    });
+
+    // 3. MESSAGES LISTENER
     const msgCol = collection(db, "groups", groupId as string, "messages");
     const unsubMessages = onSnapshot(msgCol, (snap) => {
         setDbStatus("connected");
@@ -100,13 +118,14 @@ export default function GroupPage() {
         setMessages(msgs.sort((a, b) => a.time - b.time).slice(-30));
     });
 
+    // 4. MEDIA LISTENER
     const unsubMedia = onSnapshot(collection(db, "groups", groupId as string, "media"), (snap) => {
        const items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
        setMedia(items.sort((a: any, b: any) => (b.uploadedAt?.toMillis() || 0) - (a.uploadedAt?.toMillis() || 0)));
     });
 
-    return () => { unsubMessages(); unsubMedia(); unsubAuth(); };
-  }, [groupId, group]);
+    return () => { unsubMessages(); unsubMedia(); unsubAuth(); unsubGroup(); };
+  }, [groupId, group?.id]); // Only react to group.id stability
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
