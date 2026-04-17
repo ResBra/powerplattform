@@ -67,25 +67,13 @@ export default function GroupPage() {
   useEffect(() => {
     if (!groupId) return;
 
-    // Real-time group listener (Metalogs + Members)
-    const unsubGroup = onSnapshot(doc(db, "groups", groupId as string), async (docSnap) => {
+    // 2. REAL-TIME GROUP META DATA LISTENER
+    const unsubGroup = onSnapshot(doc(db, "groups", groupId as string), (docSnap) => {
       if (!docSnap.exists()) return router.push("/modules/qloud");
-      
       const data = docSnap.data();
-      
-      // Load members separately to stay reactive
-      const membersSnap = await getDocs(collection(db, "groups", groupId as string, "members"));
-      const memberList = membersSnap.docs.map(d => ({ userId: d.id, ...d.data() }));
+      setGroup((prev: any) => ({ ...prev, id: docSnap.id, ...data }));
 
-      const details = {
-        id: docSnap.id,
-        ...data,
-        members: memberList
-      };
-      
-      setGroup(details);
-
-      // Auth logic inside group listener
+      // Auth logic & Role check
       const u = auth.currentUser;
       if (u) {
         setUser(u);
@@ -93,22 +81,11 @@ export default function GroupPage() {
         const isMod = data.moderatorIds?.includes(u.uid) || isOwner;
         setIsAdmin(isOwner);
         setIsModerator(isMod);
-
-        // Auto-Join / Profile Sync
-        await joinGroupAction(groupId as string, u.uid, u.displayName || u.email?.split('@')[0] || "Nutzer");
+        // Profile Sync
+        joinGroupAction(groupId as string, u.uid, u.displayName || u.email?.split('@')[0] || "Nutzer");
       }
     });
 
-    const unsubAuth = auth.onAuthStateChanged((u: any) => {
-        if (u) setUser(u);
-    });
-
-    return () => { unsubGroup(); unsubAuth(); };
-  }, [groupId, router]);
-
-  // 2. Real-time Listeners (Chat & Media)
-  useEffect(() => {
-    if (!groupId) return;
 
     const msgCol = collection(db, "groups", groupId as string, "messages");
     const unsubMessages = onSnapshot(msgCol, (snap) => {
