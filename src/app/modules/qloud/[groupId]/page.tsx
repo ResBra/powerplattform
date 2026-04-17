@@ -71,16 +71,18 @@ export default function GroupPage() {
     return () => unsub();
   }, []);
 
-  // 2. ROLE CALCULATOR (Reactive)
+  // 2. ROLE CALCULATOR & PROFILE SYNC (Reactive)
   useEffect(() => {
+    if (user && groupId) {
+      // Profile Sync beim Seitenbesuch
+      joinGroupAction(groupId as string, user.uid, user.displayName || user.email?.split('@')[0] || "Nutzer");
+    }
+
     if (user && group) {
       const isOwner = user.uid === group.adminId;
       const isMod = group.moderatorIds?.includes(user.uid) || isOwner;
       setIsAdmin(isOwner);
       setIsModerator(isMod);
-
-      // Profile Sync
-      joinGroupAction(groupId as string, user.uid, user.displayName || user.email?.split('@')[0] || "Nutzer");
     }
   }, [user, group, groupId]);
 
@@ -136,24 +138,45 @@ export default function GroupPage() {
     });
   };
 
+  /**
+   * STABILIZED UPLOAD FUNCTION
+   */
   const uploadMedia = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file || !user) return;
+    if (!file) return;
+    
+    if (!user) {
+      alert("Bitte logge dich erneut ein, um Bilder hochzuladen.");
+      return;
+    }
+
     setIsUploading(true);
-    setUploadStatus("Uploading Moments...");
+    setUploadStatus("Übertrage Bild...");
+
     try {
-      const newBlob = await upload(file.name, file, { access: 'public', handleUploadUrl: '/api/upload' });
+      // 1. Upload zu Vercel Blob
+      const newBlob = await upload(file.name, file, { 
+        access: 'public', 
+        handleUploadUrl: '/api/upload' 
+      });
+
+      // 2. Metadaten in Firestore speichern
       const result = await saveMediaMetadataAction({
         url: newBlob.url,
         groupId: groupId as string,
         userId: user.uid,
         userName: user.displayName || user.email?.split('@')[0] || "Nutzer"
       });
+      
       if (!result.success) throw new Error(result.error);
-      setUploadStatus("Gesendet! Wartet auf Freigabe.");
+      
+      setUploadStatus("In Prüfung...");
       setTimeout(() => setUploadStatus(""), 3000);
       setActiveTab("gallery");
-    } catch (err: any) { alert("Fehler beim Upload."); } finally { 
+    } catch (err: any) { 
+      console.error("UPLOAD ERROR:", err);
+      alert(`Upload fehlgeschlagen: ${err.message || "Unbekannter Fehler"}`);
+    } finally { 
       setIsUploading(false); 
       if (e.target) e.target.value = "";
     }
@@ -336,7 +359,7 @@ export default function GroupPage() {
                          <div className="p-10 bg-white rounded-[3rem] border-8 border-slate-50 shadow-inner">
                             <h3 className="text-xs font-black uppercase italic tracking-[0.3em] text-slate-400 mb-8 border-b border-slate-100 pb-4">Mitglieder-Verzeichnis</h3>
                             <div className="space-y-6 max-h-[500px] overflow-y-auto custom-scrollbar pr-4">
-                               {group.members.sort((a:any, b:any) => (b.role === 'admin' ? 1 : -1)).map((m: any, i: number) => {
+                               {group.members?.sort((a:any, b:any) => (b.role === 'admin' ? 1 : -1)).map((m: any, i: number) => {
                                  const isUserMod = m.role === 'moderator' || m.role === 'admin';
                                  const isUserOwner = group.adminId === m.userId;
                                  return (

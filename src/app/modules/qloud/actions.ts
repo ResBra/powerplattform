@@ -124,7 +124,7 @@ export async function getGroupDetails(id: string) {
     return {
       id: docSnap.id,
       ...data,
-      members: members // Jetzt mit Namen und Rollen!
+      members: members
     };
   } catch (error) {
     console.error("Error fetching group details:", error);
@@ -134,21 +134,32 @@ export async function getGroupDetails(id: string) {
 
 /**
  * Fügt einen Benutzer als Mitglied zu einer Gruppe hinzu (Auto-Join).
+ * WICHTIG: Überschreibt niemals die Rolle ("role"), wenn das Mitglied bereits existiert.
  */
 export async function joinGroupAction(groupId: string, userId: string, userName: string) {
   try {
     const groupRef = doc(db, "groups", groupId);
-    const groupSnap = await getDoc(groupRef);
+    const memberRef = doc(db, "groups", groupId, "members", userId);
+    
+    const memberSnap = await getDoc(memberRef);
+    
+    if (memberSnap.exists()) {
+      // NUR DEN NAMEN AKTUALISIEREN, DIE ROLLE SCHÜTZEN!
+      await updateDoc(memberRef, {
+        name: userName || memberSnap.data().name
+      });
+    } else {
+      // NEUES MITGLIED ERSTELLEN
+      await setDoc(memberRef, {
+        name: userName || "Unbekannter Node",
+        role: "member",
+        joinedAt: serverTimestamp()
+      });
+    }
 
+    const groupSnap = await getDoc(groupRef);
     if (!groupSnap.exists()) return { success: false, error: "Gruppe nicht gefunden" };
     
-    // Upsert im Mitglieder-Verzeichnis (aktualisiert auch den Namen)
-    await setDoc(doc(db, "groups", groupId, "members", userId), {
-      name: userName || "Unbekannter Node",
-      role: "member",
-      joinedAt: serverTimestamp()
-    }, { merge: true });
-
     const data = groupSnap.data();
     if (data.memberIds && data.memberIds.includes(userId)) {
       return { success: true, alreadyMember: true };
@@ -160,8 +171,6 @@ export async function joinGroupAction(groupId: string, userId: string, userName:
     });
 
     revalidatePath(`/modules/qloud/${groupId}`);
-    revalidatePath("/modules/qloud");
-    
     return { success: true };
   } catch (error: any) {
     console.error("Error joining group:", error);
@@ -177,12 +186,12 @@ export async function toggleModeratorAction(groupId: string, userId: string, isC
     const groupRef = doc(db, "groups", groupId);
     const memberRef = doc(db, "groups", groupId, "members", userId);
 
-    // 1. In der Hauptliste (für Abfragen)
+    // Atomares Update der Hauptliste
     await updateDoc(groupRef, {
       moderatorIds: isCurrentlyMod ? arrayRemove(userId) : arrayUnion(userId)
     });
 
-    // 2. Im Profil (für Anzeige)
+    // Atomares Update des Profils
     await updateDoc(memberRef, {
       role: isCurrentlyMod ? "member" : "moderator"
     });
