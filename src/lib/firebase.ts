@@ -25,6 +25,7 @@ const initFirebase = () => {
             app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
             auth = getAuth(app);
             googleProvider = new GoogleAuthProvider();
+            googleProvider.setCustomParameters({ prompt: 'select_account' });
             db = getFirestore(app);
             storage = getStorage(app);
             
