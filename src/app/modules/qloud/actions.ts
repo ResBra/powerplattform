@@ -10,8 +10,11 @@ import {
   getDoc,
   deleteDoc,
   addDoc,
+  updateDoc,
   serverTimestamp,
-  orderBy
+  orderBy,
+  arrayUnion,
+  increment
 } from "firebase/firestore";
 import { revalidatePath } from "next/cache";
 
@@ -48,8 +51,8 @@ export async function createGroup(data: { name: string, description?: string, ad
       name: data.name,
       description: data.description || "",
       adminId: data.adminId,
-      memberIds: [data.adminId], // Wichtig für die schnelle Abfrage "getGroupsForUser"
-      memberCount: 1,           // Cache für die UI
+      memberIds: [data.adminId],
+      memberCount: 1,
       createdAt: serverTimestamp()
     });
 
@@ -73,7 +76,6 @@ export async function getGroupsForUser(userId: string) {
     
     const snapshot = await getDocs(q);
     
-    // Wir mappen die Firestore-Daten auf das Format, das die UI erwartet
     return snapshot.docs.map(doc => {
       const data = doc.data();
       return {
@@ -106,12 +108,69 @@ export async function getGroupDetails(id: string) {
     return {
       id: docSnap.id,
       ...data,
-      // Fallback für UI-Kompatibilität
       members: data.memberIds?.map((m: string) => ({ userId: m })) || []
     };
   } catch (error) {
     console.error("Error fetching group details:", error);
     return null;
+  }
+}
+
+/**
+ * Fügt einen Benutzer als Mitglied zu einer Gruppe hinzu (Auto-Join).
+ */
+export async function joinGroupAction(groupId: string, userId: string) {
+  try {
+    const groupRef = doc(db, "groups", groupId);
+    const groupSnap = await getDoc(groupRef);
+
+    if (!groupSnap.exists()) return { success: false, error: "Gruppe nicht gefunden" };
+    
+    const data = groupSnap.data();
+    if (data.memberIds && data.memberIds.includes(userId)) {
+      return { success: true, alreadyMember: true };
+    }
+
+    await updateDoc(groupRef, {
+      memberIds: arrayUnion(userId),
+      memberCount: increment(1)
+    });
+
+    revalidatePath(`/modules/qloud/${groupId}`);
+    revalidatePath("/modules/qloud");
+    
+    return { success: true };
+  } catch (error: any) {
+    console.error("Error joining group:", error);
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Gibt ein Medium (Bild) für alle frei.
+ */
+export async function approveMediaAction(groupId: string, mediaId: string) {
+  try {
+    const mediaRef = doc(db, "groups", groupId, "media", mediaId);
+    await updateDoc(mediaRef, { status: "APPROVED" });
+    return { success: true };
+  } catch (error: any) {
+    console.error("Error approving media:", error);
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Löscht ein Medium (Bild) permanent.
+ */
+export async function deleteMediaAction(groupId: string, mediaId: string) {
+  try {
+    const mediaRef = doc(db, "groups", groupId, "media", mediaId);
+    await deleteDoc(mediaRef);
+    return { success: true };
+  } catch (error: any) {
+    console.error("Error deleting media:", error);
+    return { success: false, error: error.message };
   }
 }
 
