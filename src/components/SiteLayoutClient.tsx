@@ -29,9 +29,10 @@ import { useRouter } from "next/navigation";
 interface SiteLayoutClientProps {
   children: React.ReactNode;
   activePage?: string;
+  settings?: any;
 }
 
-export default function SiteLayoutClient({ children, activePage }: SiteLayoutClientProps) {
+export default function SiteLayoutClient({ children, activePage, settings }: SiteLayoutClientProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [theme, setTheme] = useState<"dark" | "light">("dark");
