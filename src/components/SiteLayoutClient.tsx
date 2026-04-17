@@ -109,7 +109,9 @@ export default function SiteLayoutClient({ children, activePage, settings }: Sit
       <motion.aside initial={false} animate={{ width: isOpen ? 280 : 80 }} className="hidden lg:flex flex-col sticky top-0 h-screen bg-card border-r border-border z-[100] overflow-hidden shadow-2xl">
         <div className="p-6 flex items-center justify-between min-h-[100px]">
           <Link href="/dashboard" className="flex items-center gap-3">
-             <div style={signatureGradient} className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-lg shadow-primary/20"><Box className="text-secondary" size={18} /></div>
+             <div style={signatureGradient} className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-lg shadow-primary/20 overflow-hidden">
+                <img src="/icon.png" alt="Logo" className="w-5 h-5 object-contain" />
+             </div>
              {isOpen && <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="font-black italic uppercase tracking-tighter text-lg whitespace-nowrap">Power<span className="text-gradient">Node.</span></motion.span>}
           </Link>
           <button onClick={() => setIsOpen(!isOpen)} className="p-2 hover:bg-foreground/5 rounded-lg text-foreground/40">{isOpen ? <X size={20} /> : <Menu size={20} />}</button>
