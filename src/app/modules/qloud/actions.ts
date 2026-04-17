@@ -17,10 +17,102 @@ import {
   arrayUnion,
   arrayRemove,
   increment,
-  writeBatch
+  writeBatch,
+  limit
 } from "firebase/firestore";
 import { revalidatePath } from "next/cache";
 import { del } from "@vercel/blob";
+
+/**
+ * Durchsucht Gruppen anhand des Namens (Präfix-Suche).
+ */
+export async function searchGroupsAction(queryText: string) {
+  if (!queryText || queryText.length < 2) return [];
+
+  try {
+    const q = query(
+      collection(db, "groups"),
+      where("name", ">=", queryText.toUpperCase()),
+      where("name", "<=", queryText.toUpperCase() + "\uf8ff"),
+      limit(10)
+    );
+    
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(d => ({
+      id: d.id,
+      name: d.data().name,
+      description: d.data().description,
+      memberCount: d.data().memberCount || 0
+    }));
+  } catch (error) {
+    console.error("Search Error:", error);
+    return [];
+  }
+}
+
+/**
+ * Erstellt eine Beitrittsanfrage für eine Gruppe.
+ */
+export async function requestJoinAction(groupId: string, userId: string, userName: string) {
+  try {
+    const requestRef = doc(db, "groups", groupId, "joinRequests", userId);
+    
+    await setDoc(requestRef, {
+      userId,
+      userName,
+      status: "PENDING",
+      requestedAt: serverTimestamp()
+    });
+
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Ruft alle offenen Beitrittsanfragen einer Gruppe ab.
+ */
+export async function getPendingRequestsAction(groupId: string) {
+  try {
+    const q = query(
+      collection(db, "groups", groupId, "joinRequests"),
+      where("status", "==", "PENDING"),
+      orderBy("requestedAt", "desc")
+    );
+    
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(d => ({
+      id: d.id,
+      ...d.data()
+    }));
+  } catch (error) {
+    console.error("Fetch requests error:", error);
+    return [];
+  }
+}
+
+/**
+ * Genehmigt oder lehnt eine Beitrittsanfrage ab.
+ */
+export async function resolveJoinRequestAction(groupId: string, targetUserId: string, targetUserName: string, approve: boolean) {
+  try {
+    const requestRef = doc(db, "groups", groupId, "joinRequests", targetUserId);
+    
+    if (approve) {
+      // 1. In die Gruppe aufnehmen
+      await joinGroupAction(groupId, targetUserId, targetUserName);
+    }
+
+    // 2. Anfrage löschen
+    await deleteDoc(requestRef);
+
+    revalidatePath(`/modules/qloud/${groupId}`);
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
 
 /**
  * Speichert Metadaten für hochgeladene Medien in einer Gruppe.
@@ -50,7 +142,8 @@ export async function saveMediaMetadataAction(data: { url: string, groupId: stri
 export async function createGroup(data: { name: string, description?: string, adminId: string, adminName?: string }) {
   try {
     const groupRef = await addDoc(collection(db, "groups"), {
-      name: data.name,
+      name: data.name.toUpperCase(), // Für Suche normalisieren
+      displayName: data.name,
       description: data.description || "",
       adminId: data.adminId,
       memberIds: [data.adminId],
@@ -90,7 +183,7 @@ export async function getGroupsForUser(userId: string) {
       const data = doc.data();
       return {
         id: doc.id,
-        name: data.name,
+        name: data.displayName || data.name,
         description: data.description,
         adminId: data.adminId,
         _count: {
@@ -126,6 +219,7 @@ export async function getGroupDetails(id: string) {
     return {
       id: docSnap.id,
       ...data,
+      name: data.displayName || data.name,
       members: members
     };
   } catch (error) {
@@ -225,7 +319,6 @@ export async function deleteMediaAction(groupId: string, mediaId: string) {
     
     if (mediaSnap.exists()) {
       const url = mediaSnap.data().url;
-      // Physische Löschung aus dem Speicher
       await del(url);
     }
 
@@ -248,23 +341,22 @@ export async function deleteGroup(id: string, userId: string) {
     if (!docSnap.exists()) return { error: "Gruppe nicht gefunden" };
     if (docSnap.data().adminId !== userId) return { error: "Nicht autorisiert" };
 
-    // 1. Alle Medien-URLs abrufen für Blob-Cleanup
     const mediaSnap = await getDocs(collection(db, "groups", id, "media"));
     const urls = mediaSnap.docs.map(d => d.data().url).filter(Boolean);
     
     if (urls.length > 0) {
-      // Physische Löschung aller Bilder aus Vercel Blob
       await del(urls);
     }
 
-    // 2. Alle Subcollection-Dokumente löschen (Batch)
     const batch = writeBatch(db);
     mediaSnap.docs.forEach(d => batch.delete(d.ref));
     
     const membersSnap = await getDocs(collection(db, "groups", id, "members"));
     membersSnap.docs.forEach(d => batch.delete(d.ref));
+
+    const requestsSnap = await getDocs(collection(db, "groups", id, "joinRequests"));
+    requestsSnap.docs.forEach(d => batch.delete(d.ref));
     
-    // 3. Haupt-Dokument löschen
     batch.delete(docRef);
     
     await batch.commit();
