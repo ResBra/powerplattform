@@ -1,4 +1,4 @@
-import { PrismaClient } from "@/generated/client";
+import { prisma } from "@/lib/prisma";
 import ClientHome from "@/components/ClientHome";
 import SiteLayout from "@/components/SiteLayout";
 
