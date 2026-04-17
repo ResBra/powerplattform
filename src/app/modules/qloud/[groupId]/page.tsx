@@ -63,48 +63,60 @@ export default function GroupPage() {
   const chatEndRef = useRef<HTMLDivElement>(null);
   const [uploadStatus, setUploadStatus] = useState("");
 
-  // 1. Initial Load & Real-time Group Sync
+  // 1. AUTH LISTENER
+  useEffect(() => {
+    const unsub = auth.onAuthStateChanged((u: any) => {
+        setUser(u);
+    });
+    return () => unsub();
+  }, []);
+
+  // 2. ROLE CALCULATOR (Reactive)
+  useEffect(() => {
+    if (user && group) {
+      const isOwner = user.uid === group.adminId;
+      const isMod = group.moderatorIds?.includes(user.uid) || isOwner;
+      setIsAdmin(isOwner);
+      setIsModerator(isMod);
+
+      // Profile Sync
+      joinGroupAction(groupId as string, user.uid, user.displayName || user.email?.split('@')[0] || "Nutzer");
+    }
+  }, [user, group, groupId]);
+
+  // 3. REAL-TIME DATA LISTENERS
   useEffect(() => {
     if (!groupId) return;
 
-    // 2. REAL-TIME GROUP META DATA LISTENER
+    // A. Meta Data
     const unsubGroup = onSnapshot(doc(db, "groups", groupId as string), (docSnap) => {
       if (!docSnap.exists()) return router.push("/modules/qloud");
       const data = docSnap.data();
       setGroup((prev: any) => ({ ...prev, id: docSnap.id, ...data }));
-
-      // Auth logic & Role check
-      const u = auth.currentUser;
-      if (u) {
-        setUser(u);
-        const isOwner = u.uid === data.adminId;
-        const isMod = data.moderatorIds?.includes(u.uid) || isOwner;
-        setIsAdmin(isOwner);
-        setIsModerator(isMod);
-        // Profile Sync
-        joinGroupAction(groupId as string, u.uid, u.displayName || u.email?.split('@')[0] || "Nutzer");
-      }
     });
 
+    // B. Members
+    const unsubMembers = onSnapshot(collection(db, "groups", groupId as string, "members"), (snap) => {
+      const memberList = snap.docs.map(d => ({ userId: d.id, ...d.data() }));
+      setGroup((prev: any) => ({ ...prev, members: memberList }));
+    });
 
+    // C. Messages
     const msgCol = collection(db, "groups", groupId as string, "messages");
     const unsubMessages = onSnapshot(msgCol, (snap) => {
         setDbStatus("connected");
-        const msgs = snap.docs.map(d => ({ 
-          id: d.id, 
-          ...d.data(),
-          time: d.data().createdAt?.toMillis() || d.data().fallbackTime || 0 
-        }));
+        const msgs = snap.docs.map(d => ({ id: d.id, ...d.data(), time: d.data().createdAt?.toMillis() || d.data().fallbackTime || 0 }));
         setMessages(msgs.sort((a, b) => a.time - b.time).slice(-30));
     });
 
+    // D. Media
     const unsubMedia = onSnapshot(collection(db, "groups", groupId as string, "media"), (snap) => {
        const items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
        setMedia(items.sort((a: any, b: any) => (b.uploadedAt?.toMillis() || 0) - (a.uploadedAt?.toMillis() || 0)));
     });
 
-    return () => { unsubMessages(); unsubMedia(); };
-  }, [groupId]);
+    return () => { unsubGroup(); unsubMembers(); unsubMessages(); unsubMedia(); };
+  }, [groupId, router]);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
