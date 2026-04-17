@@ -68,8 +68,7 @@ export async function getGroupsForUser(userId: string) {
   try {
     const q = query(
       collection(db, "groups"), 
-      where("memberIds", "array-contains", userId),
-      orderBy("createdAt", "desc")
+      where("memberIds", "array-contains", userId)
     );
     
     const snapshot = await getDocs(q);
