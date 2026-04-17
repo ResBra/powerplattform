@@ -154,11 +154,11 @@ export default function GroupPage() {
     setUploadStatus("Übertrage Bild...");
 
     try {
-      // 1. Upload zu Vercel Blob
-      const newBlob = await upload(file.name, file, { 
+      // 1. Upload zu Vercel Blob (mit manuellem Suffix für maximale Stabilität)
+      const uniqueFilename = `${Date.now()}-${file.name}`;
+      const newBlob = await upload(uniqueFilename, file, { 
         access: 'public', 
-        handleUploadUrl: '/api/upload',
-        addRandomSuffix: true
+        handleUploadUrl: '/api/upload'
       });
 
       // 2. Metadaten in Firestore speichern
