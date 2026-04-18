@@ -22,11 +22,14 @@ import {
 } from "lucide-react";
 import { auth } from "@/lib/firebase";
 import { onAuthStateChanged, User } from "firebase/auth";
+import { getGlobalSettings } from "@/app/actions/settings";
 
-export default function ClientHome({ settings }: any) {
+export default function ClientHome({ settings: initialSettings }: any) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [settings, setSettings] = useState(initialSettings);
   const router = useRouter();
+  
   const [metrics, setMetrics] = useState({
     cpu: 12,
     memory: 0,
@@ -35,10 +38,18 @@ export default function ClientHome({ settings }: any) {
   });
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    // Firebase Auth Listener
+    const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       setLoading(false);
     });
+
+    // Cloud Settings Loader
+    const loadSettings = async () => {
+      const cloudSettings = await getGlobalSettings();
+      if (cloudSettings) setSettings(cloudSettings);
+    };
+    loadSettings();
 
     const interval = setInterval(() => {
       // @ts-ignore

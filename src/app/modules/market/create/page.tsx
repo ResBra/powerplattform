@@ -20,7 +20,7 @@ import {
   ShieldCheck
 } from "lucide-react";
 import { auth } from "@/lib/firebase";
-import { upload } from '@vercel/blob/client';
+import { uploadImage } from "@/lib/storage";
 import { createListingAction } from "../actions";
 
 const CATEGORIES = [
@@ -67,12 +67,8 @@ export default function CreateListing() {
     
     setIsPending(true);
     try {
-      // 1. Upload to Vercel Blob
-      const uniqueFilename = `market-${Date.now()}-${imageFile.name}`;
-      const newBlob = await upload(uniqueFilename, imageFile, { 
-        access: 'public', 
-        handleUploadUrl: '/api/upload' 
-      });
+      // 1. Upload to Firebase Storage
+      const imageUrl = await uploadImage(imageFile, "market_listings");
 
       // 2. Create Listing in Firestore
       const result = await createListingAction({
@@ -81,7 +77,7 @@ export default function CreateListing() {
         price: parseFloat(formData.price),
         city: formData.city,
         category: formData.category,
-        imageUrl: newBlob.url,
+        imageUrl: imageUrl,
         sellerId: auth.currentUser.uid,
         sellerName: auth.currentUser.displayName || auth.currentUser.email || "Unbekannter Verkäufer"
       });

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">PowerPlattform</string>
+    <string name="title_activity_main">PowerPlattform</string>
+    <string name="package_name">com.powerplattform.app</string>
+    <string name="custom_url_scheme">com.powerplattform.app</string>
+</resources>
