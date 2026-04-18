@@ -12,7 +12,6 @@ import {
 } from "firebase/auth";
 import { auth, googleProvider } from "@/lib/firebase";
 import { useRouter, useSearchParams } from "next/navigation";
-import { createSession } from "@/app/actions/auth";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   ShieldCheck, 
@@ -81,11 +80,7 @@ function LoginContent() {
     setIsPending(true);
     try {
       googleProvider.setCustomParameters({ prompt: 'select_account' });
-      const result = await signInWithPopup(auth, googleProvider);
-      await createSession({ 
-        id: result.user.uid, 
-        username: result.user.email || result.user.displayName || "Google User" 
-      });
+      await signInWithPopup(auth, googleProvider);
       redirectToDestination();
     } catch (err: any) {
       console.error("DEBUG AUTH ERROR:", err.code);
@@ -102,8 +97,7 @@ function LoginContent() {
     if (!auth) return;
     setIsPending(true);
     try {
-      const result = await signInAnonymously(auth);
-      await createSession({ id: result.user.uid, username: "Gast-User" });
+      await signInAnonymously(auth);
       redirectToDestination();
     } catch (err: any) {
       setError("Gast-Login fehlgeschlagen.");
@@ -118,11 +112,9 @@ function LoginContent() {
     setError("");
     try {
       if (isRegistering) {
-        const result = await createUserWithEmailAndPassword(auth, email, password);
-        await createSession({ id: result.user.uid, username: result.user.email || email });
+        await createUserWithEmailAndPassword(auth, email, password);
       } else {
-        const result = await signInWithEmailAndPassword(auth, email, password);
-        await createSession({ id: result.user.uid, username: result.user.email || email });
+        await signInWithEmailAndPassword(auth, email, password);
       }
       redirectToDestination();
     } catch (err: any) {
@@ -170,11 +162,7 @@ function LoginContent() {
     if (!confirmationResult || !verificationCode) return;
     setIsPending(true);
     try {
-      const result = await confirmationResult.confirm(verificationCode);
-      await createSession({ 
-        id: result.user?.uid || "phone-user", 
-        username: result.user?.phoneNumber || "Phone User" 
-      });
+      await confirmationResult.confirm(verificationCode);
       redirectToDestination();
     } catch (err: any) {
       setError("Falscher Verifizierungs-Code.");

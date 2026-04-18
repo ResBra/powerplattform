@@ -45,9 +45,24 @@ export default function SiteLayoutClient({ children, activePage, settings }: Sit
   const [primary2, setPrimary2] = useState("#4ade80");
   const [bgImage, setBgImage] = useState("none");
   const [bgOpacity, setBgOpacity] = useState(0);
+  const [user, setUser] = useState<any>(null);
+  const [isAuthenticating, setIsAuthenticating] = useState(true);
 
   useEffect(() => {
     setMounted(true);
+    
+    // 1. AUTH OBSERVER (Universal for Web & Mobile)
+    const unsubscribe = auth.onAuthStateChanged((u: any) => {
+      setUser(u);
+      setIsAuthenticating(false);
+      
+      // If we are on a protected page (not the login page /) and no user is found:
+      if (!u && window.location.pathname !== "/") {
+        router.push("/");
+      }
+    });
+
+    // 2. PREFERENCES LOAD
     const savedTheme = localStorage.getItem("theme") as "dark" | "light" || "dark";
     const savedP1 = localStorage.getItem("p1") || "#2eb64a";
     const savedP2 = localStorage.getItem("p2") || "#4ade80";
@@ -61,7 +76,9 @@ export default function SiteLayoutClient({ children, activePage, settings }: Sit
     setBgOpacity(parseFloat(savedBgOp));
 
     applyTheme(savedTheme, savedP1, savedP2, savedBg, savedBgOp);
-  }, []);
+
+    return () => unsubscribe();
+  }, [router]);
 
   const applyTheme = (t: string, p1: string, p2: string, bg: string, op: string) => {
     document.documentElement.setAttribute("data-theme", t);
@@ -100,7 +117,13 @@ export default function SiteLayoutClient({ children, activePage, settings }: Sit
     { id: "tech", label: "Tech", url: "/backgrounds/tech.png" },
   ];
 
-  if (!mounted) return null;
+  if (!mounted || isAuthenticating) {
+    return (
+      <div className="min-h-screen bg-[#050a10] flex items-center justify-center font-black text-white italic uppercase tracking-[0.5em] animate-pulse">
+         Auth-Check...
+      </div>
+    );
+  }
 
   const signatureGradient = { background: `linear-gradient(135deg, ${primary1}, ${primary2})` };
 
