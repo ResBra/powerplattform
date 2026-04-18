@@ -28,8 +28,9 @@ import {
   Key,
   Activity
 } from "lucide-react";
+import { Suspense } from "react";
 
-export default function LoginPage() {
+function LoginContent() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isRegistering, setIsRegistering] = useState(false);
@@ -184,8 +185,7 @@ export default function LoginPage() {
   if (!mounted) return null;
 
   return (
-    <main className="min-h-screen bg-[#050a10] flex items-center justify-center p-6 relative overflow-hidden font-sans">
-      
+    <div className="min-h-screen bg-[#050a10] flex items-center justify-center p-6 relative overflow-hidden font-sans w-full">
       {/* HIDDEN RECAPTCHA */}
       <div id="phone-recaptcha"></div>
 
@@ -427,6 +427,18 @@ export default function LoginPage() {
             {[1,2,3,4,5,6,7,8].map(i => <div key={i} className="w-10 h-1 bg-white/10 rounded-full"></div>)}
          </div>
       </div>
-    </main>
+    </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#050a10] flex items-center justify-center font-black text-white italic uppercase tracking-[0.5em]">
+        System Init...
+      </div>
+    }>
+      <LoginContent />
+    </Suspense>
   );
 }

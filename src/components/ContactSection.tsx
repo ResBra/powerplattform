@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { Phone, Mail, Globe, Camera, MessageCircle, Send, CheckCircle, ChevronRight, X } from "lucide-react";
 import { CONTACT_CONFIG, SUBJECT_OPTIONS } from "@/data/contactConfig";
-import { submitContactForm } from "@/app/actions/contact";
+import { db } from "@/lib/firebase";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
 export default function ContactSection({ settings }: { settings?: any }) {
   const [isPending, setIsPending] = useState(false);
@@ -27,13 +28,25 @@ export default function ContactSection({ settings }: { settings?: any }) {
     setFeedback(null);
 
     const formData = new FormData(e.currentTarget);
-    const result = await submitContactForm(formData);
+    const data = {
+      name: formData.get("name"),
+      email: formData.get("email"),
+      phone: formData.get("phone"),
+      subject: formData.get("subject"),
+      message: formData.get("message"),
+      status: "NEU",
+      createdAt: serverTimestamp()
+    };
 
-    setFeedback(result);
-    setIsPending(false);
-    
-    if (result.success) {
+    try {
+      await addDoc(collection(db, "contact_requests"), data);
+      setFeedback({ success: true, message: "Anfrage erfolgreich gesendet! Wir melden uns bei Ihnen." });
       (e.target as HTMLFormElement).reset();
+    } catch (error: any) {
+      console.error("Firebase Error:", error);
+      setFeedback({ success: false, message: "Fehler beim Senden. Bitte versuchen Sie es später erneut." });
+    } finally {
+      setIsPending(false);
     }
   }
 

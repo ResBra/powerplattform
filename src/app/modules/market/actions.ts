@@ -16,7 +16,6 @@ import {
   arrayUnion,
   Timestamp
 } from "firebase/firestore";
-import { revalidatePath } from "next/cache";
 
 export interface MarketListing {
   id?: string;
@@ -38,7 +37,6 @@ export async function createListingAction(data: MarketListing) {
       ...data,
       createdAt: serverTimestamp(),
     });
-    revalidatePath("/modules/market");
     return { success: true, id: docRef.id };
   } catch (err: any) {
     return { success: false, error: err.message };
@@ -146,8 +144,6 @@ export async function updateListingAction(listingId: string, userId: string, dat
       updatedAt: serverTimestamp()
     });
 
-    revalidatePath("/modules/market");
-    revalidatePath(`/modules/market/listing/${listingId}`);
     return { success: true };
   } catch (err: any) {
     return { success: false, error: err.message };
@@ -165,7 +161,6 @@ export async function deleteListingAction(listingId: string, userId: string) {
     }
 
     await deleteDoc(docRef);
-    revalidatePath("/modules/market");
     return { success: true };
   } catch (err: any) {
     return { success: false, error: err.message };

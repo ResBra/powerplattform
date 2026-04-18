@@ -305,6 +305,7 @@ export default function QloudPage() {
                       </div>
                    </div>
                    {error && <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-2xl text-[10px] font-black uppercase text-red-500 italic tracking-widest">{error}</div>}
+                   {!user && <div className="p-4 bg-orange-500/10 border border-orange-500/20 rounded-2xl text-[10px] font-black uppercase text-orange-500 italic tracking-widest">Hinweis: Du musst eingeloggt sein, um eine Qloud zu starten.</div>}
                    <form onSubmit={handleCreateGroup} className="space-y-6">
                       <div className="space-y-2">
                         <label className="text-[10px] font-black uppercase italic text-foreground/30 ml-2 tracking-widest">Identifier</label>

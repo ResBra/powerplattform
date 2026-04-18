@@ -70,7 +70,7 @@ export default function ClientHome({ settings: initialSettings }: any) {
     }, 1000);
 
     return () => {
-      unsubscribe();
+      unsubscribeAuth();
       clearInterval(interval);
     };
   }, [metrics.start]);

@@ -1,10 +1,5 @@
-"use server";
-
-import { prisma } from "@/lib/prisma";
-import bcrypt from "bcryptjs";
+// STUBBED FOR ANDROID BUILD (Client-side Firebase only)
 import { SignJWT, jwtVerify } from "jose";
-import { cookies } from "next/headers";
-import { NextRequest, NextResponse } from "next/server";
 
 const secretKey = process.env.JWT_SECRET || "default_development_secret_key_123";
 const key = new TextEncoder().encode(secretKey);
@@ -25,45 +20,20 @@ export async function decrypt(input: string): Promise<any> {
 }
 
 export async function createSession(userData: { id: string; username: string }) {
-  const expires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
-  const session = await encrypt({ 
-    userId: userData.id, 
-    username: userData.username, 
-    expires 
-  });
-
-  // Save the session in a cookie
-  (await cookies()).set("session", session, { 
-    expires, 
-    httpOnly: true, 
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: "/"
-  });
-
+  // Cookies are not supported in static export / native app environment.
+  // Auth state is handled by Firebase on the client.
   return { success: true };
 }
 
 export async function login(formData: FormData) {
-  const username = formData.get("username") as string;
-  const password = formData.get("password") as string;
-
-  // This is a legacy fallback, usually we use createSession after Firebase login
-  const user = { id: "mock-admin", username: username || "admin" };
-  return await createSession(user);
+  // Legacy login stubbed out.
+  return { success: true };
 }
 
 export async function logout() {
-  // Destroy the session
-  (await cookies()).set("session", "", { expires: new Date(0), path: "/" });
+  // Legacy logout stubbed out.
 }
 
 export async function getSession() {
-  const session = (await cookies()).get("session")?.value;
-  if (!session) return null;
-  try {
-    return await decrypt(session);
-  } catch (error) {
-    return null;
-  }
+  return null;
 }

@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "1023753786745",
+    "project_id": "powerautomate-3afbd",
+    "storage_bucket": "powerautomate-3afbd.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1023753786745:android:9d1530cedaab4c651c8ba8",
+        "android_client_info": {
+          "package_name": "com.powerplatform.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1023753786745-dj51kqp39uno9mqdmfup7p14ao9ver94.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAlQfQADoXprQO0fk0UpBtM7CS6QExQEls"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1023753786745-dj51kqp39uno9mqdmfup7p14ao9ver94.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

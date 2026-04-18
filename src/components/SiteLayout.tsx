@@ -1,4 +1,3 @@
-import { prisma } from "@/lib/prisma";
 import SiteLayoutClient from "./SiteLayoutClient";
 
 interface SiteLayoutProps {
@@ -8,10 +7,11 @@ interface SiteLayoutProps {
 }
 
 export default async function SiteLayout({ children, activePage, settings: passedSettings }: SiteLayoutProps) {
-  // Fetch settings if not passed as prop
-  const settings = passedSettings || await prisma.globalSettings.findUnique({
-    where: { id: "global" }
-  });
+  // We use the passed settings or a default object to ensure serverless compatibility
+  const settings = passedSettings || {
+    platformName: "Power Platform",
+    maintenanceMode: false
+  };
 
   return (
     <SiteLayoutClient activePage={activePage} settings={settings}>

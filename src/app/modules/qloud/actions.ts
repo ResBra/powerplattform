@@ -1,4 +1,4 @@
-
+"use client";
 
 import { db } from "@/lib/firebase";
 import { 
@@ -20,8 +20,6 @@ import {
   writeBatch,
   limit
 } from "firebase/firestore";
-import { revalidatePath } from "next/cache";
-import { del } from "@vercel/blob";
 
 /**
  * Durchsucht Gruppen anhand des Namens (Präfix-Suche).
@@ -111,7 +109,6 @@ export async function resolveJoinRequestAction(groupId: string, targetUserId: st
     // 2. Anfrage löschen
     await deleteDoc(requestRef);
 
-    revalidatePath(`/modules/qloud/${groupId}`);
     return { success: true };
   } catch (error: any) {
     return { success: false, error: error.message };
@@ -163,11 +160,13 @@ export async function createGroup(data: { name: string, description?: string, ad
       joinedAt: serverTimestamp()
     });
 
-    revalidatePath("/modules/qloud");
     return { success: true, groupId: groupRef.id };
   } catch (error: any) {
-    console.error("Failed to create group:", error);
-    return { success: false, error: "Firebase Fehler beim Erstellen der Gruppe." };
+    console.error("⛔ QLOUD CREATE ERROR:", error);
+    return { 
+      success: false, 
+      error: error.message || "Unbekannter Firebase Fehler beim Erstellen der Gruppe." 
+    };
   }
 }
 
@@ -271,7 +270,6 @@ export async function joinGroupAction(groupId: string, userId: string, userName:
       memberCount: increment(1)
     });
 
-    revalidatePath(`/modules/qloud/${groupId}`);
     return { success: true };
   } catch (error: any) {
     console.error("Error joining group:", error);
@@ -308,7 +306,6 @@ export async function toggleModeratorAction(groupId: string, userId: string) {
 
     await batch.commit();
 
-    revalidatePath(`/modules/qloud/${groupId}`);
     return { success: true, newRole: isNewMod ? "moderator" : "member" };
   } catch (error: any) {
     console.error("Error toggling moderator:", error);
@@ -338,11 +335,7 @@ export async function deleteMediaAction(groupId: string, mediaId: string) {
     const mediaRef = doc(db, "groups", groupId, "media", mediaId);
     const mediaSnap = await getDoc(mediaRef);
     
-    if (mediaSnap.exists()) {
-      const url = mediaSnap.data().url;
-      await del(url);
-    }
-
+    // Legacy Vercel Blob deletion removed for standalone compatibility
     await deleteDoc(mediaRef);
     return { success: true };
   } catch (error: any) {
@@ -366,7 +359,6 @@ export async function deleteGroup(id: string, userId: string) {
     const urls = mediaSnap.docs.map(d => d.data().url).filter(Boolean);
     
     if (urls.length > 0) {
-      await del(urls);
     }
 
     const batch = writeBatch(db);
@@ -382,7 +374,6 @@ export async function deleteGroup(id: string, userId: string) {
     
     await batch.commit();
 
-    revalidatePath("/modules/qloud");
     return { success: true };
   } catch (error: any) {
     console.error("Error deleting group:", error);
@@ -411,7 +402,6 @@ export async function kickMemberAction(groupId: string, userId: string) {
     batch.delete(memberRef);
 
     await batch.commit();
-    revalidatePath(`/modules/qloud/${groupId}`);
     return { success: true };
   } catch (error: any) {
     console.error("Error kicking member:", error);
