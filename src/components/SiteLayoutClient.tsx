@@ -19,7 +19,8 @@ import {
   Pipette,
   Share2,
   Download,
-  Copy
+  Copy,
+  ShoppingBag
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { auth } from "@/lib/firebase";
@@ -86,6 +87,7 @@ export default function SiteLayoutClient({ children, activePage, settings }: Sit
   const navItems = [
     { label: "Dashboard", href: "/dashboard", icon: <LayoutDashboard size={20} />, id: "dashboard" },
     { label: "Qloud Hub", href: "/modules/qloud", icon: <Box size={20} />, id: "qloud" },
+    { label: "Market", href: "/modules/market", icon: <ShoppingBag size={20} />, id: "market" },
     { label: "Profil", href: "/profile", icon: <User size={20} />, id: "profile" },
   ];
 
@@ -167,7 +169,29 @@ export default function SiteLayoutClient({ children, activePage, settings }: Sit
 
       {/* MAIN CONTENT AREA */}
       <div className="flex-1 flex flex-col min-w-0 relative">
-        <main className="flex-1 p-6 md:p-12 lg:p-16 pt-28 lg:pt-16 max-w-7xl mx-auto w-full">{children}</main>
+        <main className="flex-1 p-6 md:p-12 lg:p-16 pt-28 lg:pt-16 max-w-7xl mx-auto w-full">
+          {children}
+        </main>
+        
+        {/* GLOBAL FOOTER */}
+        <footer className="p-10 border-t border-white/5 bg-foreground/[0.02] mt-auto">
+           <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
+              <div className="flex items-center gap-4">
+                 <img src="/icon.png" alt="" className="w-8 h-8 opacity-20" />
+                 <p className="text-[10px] font-black uppercase text-foreground/20 italic tracking-[0.4em]">© 2026 PowerPlattform Digital</p>
+              </div>
+              
+              <div className="flex items-center gap-10">
+                 <Link href="/legal/impressum" className="text-[10px] font-black uppercase text-foreground/40 italic hover:text-primary transition-colors tracking-widest">Impressum</Link>
+                 <Link href="/legal/datenschutz" className="text-[10px] font-black uppercase text-foreground/40 italic hover:text-primary transition-colors tracking-widest">Datenschutz</Link>
+              </div>
+
+              <div className="flex items-center gap-3 px-4 py-2 bg-foreground/5 rounded-full">
+                 <div className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse"></div>
+                 <span className="text-[8px] font-black uppercase text-foreground/40 italic tracking-widest">Node Status: Optimized</span>
+              </div>
+           </div>
+        </footer>
       </div>
 
       {/* SETTINGS POPUP MODAL (RESTORED) */}
