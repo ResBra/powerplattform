@@ -12,6 +12,18 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID
 };
 
+const validateConfig = () => {
+    const missing = Object.entries(firebaseConfig)
+        .filter(([_, value]) => !value)
+        .map(([key]) => key);
+    
+    if (missing.length > 0) {
+        console.warn("⚠️ CLOUD WARNING: Missing environment variables:", missing.join(", "));
+        return false;
+    }
+    return true;
+};
+
 // --- SINGLETON SERVICE HOLDER ---
 let app: any = null;
 let auth: any = null;
@@ -22,15 +34,21 @@ let storage: any = null;
 const initFirebase = () => {
     if (!app) {
         try {
+            const isConfigValid = validateConfig();
+            
             app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
             auth = getAuth(app);
             googleProvider = new GoogleAuthProvider();
             db = getFirestore(app);
             storage = getStorage(app);
             
-            console.log("🚀 CLOUD ENGINE: Connected to project [" + firebaseConfig.projectId + "]");
+            if (isConfigValid) {
+                console.log("🚀 CLOUD ENGINE: Connected to project [" + firebaseConfig.projectId + "]");
+            } else {
+                console.error("❌ CLOUD ERROR: Firebase initialized with INCOMPLETE configuration.");
+            }
         } catch (error) {
-            console.error("❌ CLOUD ERROR:", error);
+            console.error("❌ CLOUD CRITICAL ERROR during initialization:", error);
         }
     }
 };
