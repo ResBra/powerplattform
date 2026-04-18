@@ -273,22 +273,35 @@ export async function joinGroupAction(groupId: string, userId: string, userName:
 
 /**
  * Ernennt oder entfernt einen Moderator.
+ * Prüft den Status jetzt sicher auf dem Server.
  */
-export async function toggleModeratorAction(groupId: string, userId: string, isCurrentlyMod: boolean) {
+export async function toggleModeratorAction(groupId: string, userId: string) {
   try {
     const groupRef = doc(db, "groups", groupId);
     const memberRef = doc(db, "groups", groupId, "members", userId);
 
-    await updateDoc(groupRef, {
-      moderatorIds: isCurrentlyMod ? arrayRemove(userId) : arrayUnion(userId)
+    const memberSnap = await getDoc(memberRef);
+    if (!memberSnap.exists()) throw new Error("Mitglied nicht gefunden");
+
+    const currentRole = memberSnap.data().role;
+    const isNewMod = currentRole !== "moderator";
+
+    const batch = writeBatch(db);
+
+    // 1. Array im Gruppen-Dokument aktualisieren
+    batch.update(groupRef, {
+      moderatorIds: isNewMod ? arrayUnion(userId) : arrayRemove(userId)
     });
 
-    await updateDoc(memberRef, {
-      role: isCurrentlyMod ? "member" : "moderator"
+    // 2. Rolle in der Mitglieder-Subcollection aktualisieren
+    batch.update(memberRef, {
+      role: isNewMod ? "moderator" : "member"
     });
+
+    await batch.commit();
 
     revalidatePath(`/modules/qloud/${groupId}`);
-    return { success: true };
+    return { success: true, newRole: isNewMod ? "moderator" : "member" };
   } catch (error: any) {
     console.error("Error toggling moderator:", error);
     return { success: false, error: error.message };

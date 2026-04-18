@@ -23,7 +23,8 @@ import {
    ShieldCheck,
    Image as ImageIcon,
    Lock,
-   UserPlus
+   UserPlus,
+   MessageCircle
 } from "lucide-react";
 import { auth, db } from "@/lib/firebase";
 import {
@@ -64,6 +65,7 @@ export default function GroupPage() {
    const [isModerator, setIsModerator] = useState(false);
    const [isMember, setIsMember] = useState(false);
    const [isUploading, setIsUploading] = useState(false);
+   const [processingMemberId, setProcessingMemberId] = useState<string | null>(null);
    const [dbStatus, setDbStatus] = useState<"connected" | "error" | "linking">("linking");
    const [copied, setCopied] = useState(false);
    const chatEndRef = useRef<HTMLDivElement>(null);
@@ -182,9 +184,45 @@ export default function GroupPage() {
       await deleteMediaAction(groupId as string, mediaId);
    };
 
-   const handleToggleModerator = async (targetUserId: string, currentIsMod: boolean) => {
+   const handleToggleModerator = async (targetUserId: string) => {
       if (!isAdmin) return;
-      await toggleModeratorAction(groupId as string, targetUserId, currentIsMod);
+      setProcessingMemberId(targetUserId);
+      try {
+         const res = await toggleModeratorAction(groupId as string, targetUserId);
+         if (!res.success) {
+            alert("Fehler: " + res.error);
+         }
+      } catch (err) {
+         alert("Verbindungsfehler bei der Rollenänderung.");
+      } finally {
+         setProcessingMemberId(null);
+      }
+   };
+
+   const handlePrintQR = () => {
+      const canvas = document.querySelector('canvas');
+      if (!canvas) return;
+      const dataUrl = canvas.toDataURL();
+      const windowContent = `<!DOCTYPE html><html><head><title>Print QR</title></head><body style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;"><h1>${group.name} Qloud</h1><img src="${dataUrl}" style="width:300px;"/><p>Scan to join</p><script>window.onload=()=>{window.print();window.close();}</script></body></html>`;
+      const printWin = window.open('', '', 'width=600,height=600');
+      printWin?.document.open();
+      printWin?.document.write(windowContent);
+      printWin?.document.close();
+   };
+
+   const handleShare = async () => {
+      const shareData = {
+         title: `${group.name} | Qloud Hub`,
+         text: `Tritt meiner Qloud "${group.name}" bei!`,
+         url: window.location.href,
+      };
+      if (navigator.share) {
+         try { await navigator.share(shareData); } catch (err) { console.error(err); }
+      } else {
+         navigator.clipboard.writeText(window.location.href);
+         setCopied(true);
+         setTimeout(() => setCopied(false), 2000);
+      }
    };
 
    const handleDeleteGroup = async () => {
@@ -351,7 +389,14 @@ export default function GroupPage() {
                                           <div className="flex flex-col"><span className="text-sm md:text-base font-black italic uppercase">{m.name || "Gast"}</span><span className="text-[8px] md:text-[9px] font-black uppercase text-foreground/30 italic tracking-widest">{m.role}</span></div>
                                        </div>
                                        {group.adminId !== m.userId && (
-                                          <button onClick={() => handleToggleModerator(m.userId, m.role === 'moderator')} className={`px-4 py-2 md:px-5 md:py-3 rounded-xl md:rounded-2xl transition-all text-[8px] md:text-[10px] font-black uppercase italic shadow-sm ${m.role === 'moderator' ? 'bg-amber-100 text-amber-700 border border-amber-200' : 'bg-foreground/5 text-foreground/40 border border-border'}`}>Moderator</button>
+                                          <button 
+                                             disabled={processingMemberId === m.userId}
+                                             onClick={() => handleToggleModerator(m.userId)} 
+                                             className={`px-4 py-2 md:px-5 md:py-3 rounded-xl md:rounded-2xl transition-all text-[8px] md:text-[10px] font-black uppercase italic shadow-sm flex items-center gap-2 ${m.role === 'moderator' ? 'bg-amber-100 text-amber-700 border border-amber-200' : 'bg-foreground/5 text-foreground/40 border border-border'}`}
+                                          >
+                                             {processingMemberId === m.userId ? <Clock className="animate-spin" size={12} /> : null}
+                                             Moderator
+                                          </button>
                                        )}
                                     </div>
                                  ))}
@@ -376,8 +421,16 @@ export default function GroupPage() {
                         <h3 className="text-4xl font-black italic uppercase tracking-tighter leading-none text-center">Join the <span className="text-primary italic">Qloud.</span></h3>
                         <div className="bg-white p-8 rounded-[3rem] shadow-2xl border-4 border-slate-50"><QRCodeSVG value={typeof window !== 'undefined' ? window.location.href : '/'} size={220} level="H" /></div>
                         <div className="w-full space-y-4">
+                           <div className="flex gap-2 w-full">
+                              <button onClick={handleShare} className="flex-1 py-4 bg-primary text-secondary rounded-2xl font-black italic uppercase text-[10px] flex items-center justify-center gap-2 shadow-lg hover:scale-[1.02] transition-all"><Share2 size={16} /> Link Teilen</button>
+                              <a href={`https://wa.me/?text=${encodeURIComponent(`Tritt meiner Qloud bei: ${window.location.href}`)}`} target="_blank" className="p-4 bg-[#25D366] text-white rounded-2xl shadow-lg hover:scale-[1.02] transition-all flex items-center justify-center"><MessageCircle size={20} /></a>
+                           </div>
+                           <div className="grid grid-cols-2 gap-2">
+                              <button onClick={handlePrintQR} className="py-4 bg-foreground/5 border border-border rounded-2xl font-black italic uppercase text-[10px] flex items-center justify-center gap-2 hover:bg-foreground/10 transition-all text-foreground/60"><Printer size={16} /> Drucken</button>
+                              <button onClick={() => { const canvas = document.querySelector('canvas'); if (!canvas) return; const link = document.createElement('a'); link.download = `QR-${group.name}.png`; link.href = canvas.toDataURL(); link.click(); }} className="py-4 bg-foreground/5 border border-border rounded-2xl font-black italic uppercase text-[10px] flex items-center justify-center gap-2 hover:bg-foreground/10 transition-all text-foreground/60"><Download size={16} /> Download</button>
+                           </div>
                            <div className="p-6 bg-foreground/5 border border-border rounded-3xl flex items-center justify-between shadow-inner"><code className="text-[10px] font-bold text-foreground/40 truncate mr-4 italic">Identifier: {groupId}</code><button onClick={() => { navigator.clipboard.writeText(window.location.href); setCopied(true); setTimeout(() => setCopied(false), 2000); }} className={`p-4 rounded-xl transition-all shadow-md ${copied ? 'bg-green-500 text-white' : 'bg-foreground/10 text-foreground'}`}>{copied ? <Check size={20} /> : <Copy size={20} />}</button></div>
-                           <p className="text-center text-[10px] font-black uppercase text-foreground/40 italic tracking-widest leading-relaxed">Gäste müssen eine Beitrittsanfrage senden.<br /> Genehmigung erfolgt durch den Admin.</p>
+                           <p className="text-center text-[10px] font-black uppercase text-foreground/40 italic tracking-widest leading-relaxed mt-4">Gäste müssen eine Beitrittsanfrage senden.<br /> Genehmigung erfolgt durch den Admin.</p>
                         </div>
                      </div>
                   </motion.div>
