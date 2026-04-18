@@ -1,9 +1,10 @@
 {
-  "name": "Power Platform // Qloud Hub",
-  "short_name": "Qloud Hub",
-  "id": "qloud-hub-v1",
+  "name": "PowerPlattform",
+  "short_name": "PowerPlattform",
+  "id": "power-plattform-v1",
   "description": "Authorized Social Hub for private Events and Nodes",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#0a0a0a",
   "theme_color": "#fbff00",
@@ -24,7 +25,7 @@
       "src": "/apple-icon.png",
       "sizes": "180x180",
       "type": "image/png",
-      "purpose": "maskable"
+      "purpose": "any"
     }
   ],
   "screenshots": []

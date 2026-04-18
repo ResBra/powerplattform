@@ -19,8 +19,8 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
-    statusBarStyle: "default",
-    title: "Power App",
+    statusBarStyle: "black-translucent",
+    title: "PowerPlattform",
   },
   icons: {
     icon: "/favicon.png",
@@ -28,31 +28,31 @@ export const metadata: Metadata = {
     apple: "/apple-icon.png",
   },
   title: {
-    template: "%s | Qloud Hub",
-    default: "Power Platform // Qloud Hub",
+    template: "%s | PowerPlattform",
+    default: "PowerPlattform // Digital Hub",
   },
   description: "Authorized Social Hub for private Events and Nodes. Optimized for PWA and Mobile UX.",
-  keywords: ["Qloud", "Social", "Hub", "Platform", "Management", "PWA"],
-  authors: [{ name: "Qloud Hub Team" }],
-  creator: "Qloud Hub Team",
-  publisher: "Qloud Hub Team",
+  keywords: ["PowerPlattform", "Digital", "Hub", "Node", "Management", "PWA"],
+  authors: [{ name: "PowerPlattform Team" }],
+  creator: "PowerPlattform Team",
+  publisher: "PowerPlattform Team",
   formatDetection: {
     email: false,
     address: false,
     telephone: false,
   },
   openGraph: {
-    title: "Power Platform // Qloud Hub",
+    title: "PowerPlattform // Digital Hub",
     description: "Authorized Social Hub for private Events and Nodes.",
     url: "https://power-app-template.com",
-    siteName: "Qloud Hub",
+    siteName: "PowerPlattform",
     locale: "de_DE",
     type: "website",
-    images: [{ url: "/icon-512.png", width: 512, height: 512, alt: "Qloud Hub Logo" }],
+    images: [{ url: "/icon-512.png", width: 512, height: 512, alt: "PowerPlattform Logo" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Power Platform // Qloud Hub",
+    title: "PowerPlattform // Digital Hub",
     description: "Authorized Social Hub for private Events and Nodes.",
     images: ["/icon-512.png"],
   },
@@ -64,6 +64,11 @@ export const metadata: Metadata = {
 
 export const viewport = {
   themeColor: "#000000",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover",
 };
 
 import CookieConsent from "@/components/CookieConsent";
