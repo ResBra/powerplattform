@@ -1,12 +1,12 @@
 "use client";
 
 import { db } from "@/lib/firebase";
-import { 
-  collection, 
-  query, 
-  where, 
-  getDocs, 
-  doc, 
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+  doc,
   getDoc,
   deleteDoc,
   addDoc,
@@ -34,7 +34,7 @@ export async function searchGroupsAction(queryText: string) {
       where("name", "<=", queryText.toUpperCase() + "\uf8ff"),
       limit(10)
     );
-    
+
     const snapshot = await getDocs(q);
     return snapshot.docs.map(d => ({
       id: d.id,
@@ -54,7 +54,7 @@ export async function searchGroupsAction(queryText: string) {
 export async function requestJoinAction(groupId: string, userId: string, userName: string) {
   try {
     const requestRef = doc(db, "groups", groupId, "joinRequests", userId);
-    
+
     await setDoc(requestRef, {
       userId,
       userName,
@@ -78,7 +78,7 @@ export async function getPendingRequestsAction(groupId: string) {
       where("status", "==", "PENDING"),
       orderBy("requestedAt", "desc")
     );
-    
+
     const snapshot = await getDocs(q);
     return snapshot.docs.map(d => {
       const data = d.data();
@@ -100,7 +100,7 @@ export async function getPendingRequestsAction(groupId: string) {
 export async function resolveJoinRequestAction(groupId: string, targetUserId: string, targetUserName: string, approve: boolean) {
   try {
     const requestRef = doc(db, "groups", groupId, "joinRequests", targetUserId);
-    
+
     if (approve) {
       // 1. In die Gruppe aufnehmen
       await joinGroupAction(groupId, targetUserId, targetUserName);
@@ -163,9 +163,9 @@ export async function createGroup(data: { name: string, description?: string, ad
     return { success: true, groupId: groupRef.id };
   } catch (error: any) {
     console.error("⛔ QLOUD CREATE ERROR:", error);
-    return { 
-      success: false, 
-      error: error.message || "Unbekannter Firebase Fehler beim Erstellen der Gruppe." 
+    return {
+      success: false,
+      error: error.message || "Unbekannter Firebase Fehler beim Erstellen der Gruppe."
     };
   }
 }
@@ -176,12 +176,12 @@ export async function createGroup(data: { name: string, description?: string, ad
 export async function getGroupsForUser(userId: string) {
   try {
     const q = query(
-      collection(db, "groups"), 
+      collection(db, "groups"),
       where("memberIds", "array-contains", userId)
     );
-    
+
     const snapshot = await getDocs(q);
-    
+
     return snapshot.docs.map(doc => {
       const data = doc.data();
       return {
@@ -211,7 +211,7 @@ export async function getGroupDetails(id: string) {
     if (!docSnap.exists()) return null;
 
     const data = docSnap.data();
-    
+
     const membersSnap = await getDocs(collection(db, "groups", id, "members"));
     const members = membersSnap.docs.map(d => {
       const mData = d.data();
@@ -242,9 +242,9 @@ export async function joinGroupAction(groupId: string, userId: string, userName:
   try {
     const groupRef = doc(db, "groups", groupId);
     const memberRef = doc(db, "groups", groupId, "members", userId);
-    
+
     const memberSnap = await getDoc(memberRef);
-    
+
     if (memberSnap.exists()) {
       await updateDoc(memberRef, {
         name: userName || memberSnap.data().name
@@ -259,7 +259,7 @@ export async function joinGroupAction(groupId: string, userId: string, userName:
 
     const groupSnap = await getDoc(groupRef);
     if (!groupSnap.exists()) return { success: false, error: "Gruppe nicht gefunden" };
-    
+
     const data = groupSnap.data();
     if (data.memberIds && data.memberIds.includes(userId)) {
       return { success: true, alreadyMember: true };
@@ -333,7 +333,6 @@ export async function approveMediaAction(groupId: string, mediaId: string) {
 export async function deleteMediaAction(groupId: string, mediaId: string) {
   try {
     const mediaRef = doc(db, "groups", groupId, "media", mediaId);
-    const mediaSnap = await getDoc(mediaRef);
     
     // Firebase Storage deletion handled via client
     await deleteDoc(mediaRef);
@@ -356,22 +355,18 @@ export async function deleteGroup(id: string, userId: string) {
     if (docSnap.data().adminId !== userId) return { error: "Nicht autorisiert" };
 
     const mediaSnap = await getDocs(collection(db, "groups", id, "media"));
-    const urls = mediaSnap.docs.map(d => d.data().url).filter(Boolean);
     
-    if (urls.length > 0) {
-    }
-
     const batch = writeBatch(db);
     mediaSnap.docs.forEach(d => batch.delete(d.ref));
-    
+
     const membersSnap = await getDocs(collection(db, "groups", id, "members"));
     membersSnap.docs.forEach(d => batch.delete(d.ref));
 
     const requestsSnap = await getDocs(collection(db, "groups", id, "joinRequests"));
     requestsSnap.docs.forEach(d => batch.delete(d.ref));
-    
+
     batch.delete(docRef);
-    
+
     await batch.commit();
 
     return { success: true };
