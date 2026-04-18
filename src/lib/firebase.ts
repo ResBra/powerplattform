@@ -32,6 +32,8 @@ let db: any = null;
 let storage: any = null;
 
 const initFirebase = () => {
+    if (typeof window === "undefined") return; // Skip on server/build
+    
     if (!app) {
         try {
             const isConfigValid = validateConfig();
@@ -45,7 +47,7 @@ const initFirebase = () => {
             if (isConfigValid) {
                 console.log("🚀 CLOUD ENGINE: Connected to project [" + firebaseConfig.projectId + "]");
             } else {
-                console.error("❌ CLOUD ERROR: Firebase initialized with INCOMPLETE configuration.");
+                console.warn("⚠️ CLOUD WARNING: Firebase initialized with INCOMPLETE configuration.");
             }
         } catch (error) {
             console.error("❌ CLOUD CRITICAL ERROR during initialization:", error);

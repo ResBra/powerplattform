@@ -12,6 +12,8 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   useEffect(() => {
+    if (!auth) return; // Skip if firebase not initialized (e.g. on server)
+
     const unsubscribe = onAuthStateChanged(auth, (u) => {
       if (!u) {
         // Redirekt zum Login mit der aktuellen URL als Rücksprungziel

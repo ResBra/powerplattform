@@ -45,7 +45,7 @@ export default function ListingClient() {
   }, [listingId, router]);
 
   const handleContactSeller = async () => {
-    if (!auth.currentUser || !listing) return;
+    if (!auth?.currentUser || !listing) return;
     
     if (auth.currentUser.uid === listing.sellerId) {
       router.push("/modules/market/messages");
@@ -70,7 +70,7 @@ export default function ListingClient() {
   };
 
   const handleDelete = async () => {
-    if (!auth.currentUser || !listing) return;
+    if (!auth?.currentUser || !listing) return;
     if (!confirm("Möchtest du dieses Inserat wirklich löschen?")) return;
 
     setIsDeleting(true);
@@ -83,7 +83,7 @@ export default function ListingClient() {
     }
   };
 
-  const isOwner = auth.currentUser?.uid === listing?.sellerId;
+  const isOwner = auth?.currentUser?.uid === listing?.sellerId;
 
   if (loading) {
     return (
