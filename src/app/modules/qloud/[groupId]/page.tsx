@@ -33,6 +33,7 @@ import {
    onSnapshot,
    serverTimestamp,
    doc,
+   getDoc,
    getDocs
 } from "firebase/firestore";
 import {
@@ -43,11 +44,10 @@ import {
    approveMediaAction,
    deleteMediaAction,
    toggleModeratorAction,
-   getPendingRequestsAction,
    resolveJoinRequestAction,
    requestJoinAction
 } from "../actions";
-import { QRCodeSVG } from "qrcode.react";
+import { QRCodeCanvas } from "qrcode.react";
 import { upload } from '@vercel/blob/client';
 
 export default function GroupPage() {
@@ -69,7 +69,6 @@ export default function GroupPage() {
    const [dbStatus, setDbStatus] = useState<"connected" | "error" | "linking">("linking");
    const [copied, setCopied] = useState(false);
    const chatEndRef = useRef<HTMLDivElement>(null);
-   const [uploadStatus, setUploadStatus] = useState("");
    const [joinRequests, setJoinRequests] = useState<any[]>([]);
    const [isRequesting, setIsRequesting] = useState(false);
    const [requestSent, setRequestSent] = useState(false);
@@ -126,7 +125,7 @@ export default function GroupPage() {
       const unsubMessages = onSnapshot(msgCol, (snap) => {
          setDbStatus("connected");
          const msgs = snap.docs.map(d => ({ id: d.id, ...d.data(), time: d.data().createdAt?.toMillis() || d.data().fallbackTime || 0 }));
-         setMessages(msgs.sort((a, b) => a.time - b.time).slice(-30));
+         setMessages(msgs.sort((a, b) => a.time - b.time).slice(-50));
       });
 
       const unsubMedia = onSnapshot(collection(db, "groups", groupId as string, "media"), (snap) => {
@@ -140,6 +139,7 @@ export default function GroupPage() {
       };
    }, [groupId, router, isModerator]);
 
+   // 4. ACTION HANDLERS
    const handleRequestAccess = async () => {
       if (!user) return;
       setIsRequesting(true);
@@ -189,9 +189,7 @@ export default function GroupPage() {
       setProcessingMemberId(targetUserId);
       try {
          const res = await toggleModeratorAction(groupId as string, targetUserId);
-         if (!res.success) {
-            alert("Fehler: " + res.error);
-         }
+         if (!res.success) alert("Fehler: " + res.error);
       } catch (err) {
          alert("Verbindungsfehler bei der Rollenänderung.");
       } finally {
@@ -201,10 +199,21 @@ export default function GroupPage() {
 
    const handlePrintQR = () => {
       const canvas = document.querySelector('canvas');
-      if (!canvas) return;
-      const dataUrl = canvas.toDataURL();
-      const windowContent = `<!DOCTYPE html><html><head><title>Print QR</title></head><body style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;"><h1>${group.name} Qloud</h1><img src="${dataUrl}" style="width:300px;"/><p>Scan to join</p><script>window.onload=()=>{window.print();window.close();}</script></body></html>`;
-      const printWin = window.open('', '', 'width=600,height=600');
+      if (!canvas) {
+         alert("QR-Code noch nicht geladen.");
+         return;
+      }
+      const dataUrl = canvas.toDataURL("image/png");
+      const windowContent = `<!DOCTYPE html><html><head><title>Print QR</title></head><body style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;background:#fff;margin:0;">
+         <div style="border:4px solid #000;padding:40px;border-radius:40px;text-align:center;">
+            <h1 style="font-size:48px;margin-bottom:10px;text-transform:uppercase;">${group?.name}</h1>
+            <p style="font-size:18px;letter-spacing:0.2em;color:#666;margin-bottom:40px;">AUTHORIZED NODE ACCESS</p>
+            <img src="${dataUrl}" style="width:400px;height:400px;"/>
+            <p style="margin-top:40px;font-size:24px;font-weight:bold;">Scan to join the Qloud.</p>
+         </div>
+         <script>window.onload=()=>{window.print();setTimeout(()=>window.close(),500);}</script>
+      </body></html>`;
+      const printWin = window.open('', '', 'width=900,height=900');
       printWin?.document.open();
       printWin?.document.write(windowContent);
       printWin?.document.close();
@@ -212,8 +221,8 @@ export default function GroupPage() {
 
    const handleShare = async () => {
       const shareData = {
-         title: `${group.name} | Qloud Hub`,
-         text: `Tritt meiner Qloud "${group.name}" bei!`,
+         title: `${group?.name} | Qloud Hub`,
+         text: `Tritt meiner Qloud "${group?.name}" bei!`,
          url: window.location.href,
       };
       if (navigator.share) {
@@ -349,36 +358,33 @@ export default function GroupPage() {
                      </motion.section>
                   )}
 
+                  {activeTab === "moderation" && isModerator && (
+                     <motion.section key="moderation" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="space-y-8">
+                        <div className="bg-amber-500/10 border border-amber-500/20 rounded-[2rem] p-6 md:p-10 space-y-8 shadow-xl">
+                           <div className="flex items-center gap-4">
+                              <div className="p-4 bg-amber-500 rounded-2xl text-black"><ShieldCheck size={24} /></div>
+                              <h2 className="text-2xl font-black italic uppercase text-amber-500">Member Requests</h2>
+                           </div>
+                           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                              {joinRequests.map((req) => (
+                                 <div key={req.requestId} className="p-6 bg-card border border-border rounded-[2rem] flex items-center justify-between shadow-2xl">
+                                    <span className="font-black italic uppercase text-xs">{req.userName}</span>
+                                    <div className="flex gap-2">
+                                       <button onClick={() => handleResolveRequest(req.userId, req.userName, true)} className="p-3 bg-green-500 text-white rounded-xl hover:scale-110 transition-all"><Check size={18} /></button>
+                                       <button onClick={() => handleResolveRequest(req.userId, req.userName, false)} className="p-3 bg-red-500 text-white rounded-xl hover:scale-110 transition-all"><X size={18} /></button>
+                                    </div>
+                                 </div>
+                              ))}
+                              {joinRequests.length === 0 && <p className="col-span-full py-10 text-center text-foreground/20 font-black italic uppercase tracking-widest">Keine offenen Anfragen</p>}
+                           </div>
+                        </div>
+                     </motion.section>
+                  )}
+
                   {isAdmin && activeTab === "admin" && (
                      <motion.section key="admin" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-8 md:space-y-12">
-                        {joinRequests.length > 0 && (
-                           <div className="bg-primary/5 border border-primary/20 rounded-[2rem] md:rounded-[3rem] p-6 md:p-10 space-y-6 md:space-y-8">
-                              <div className="flex items-center gap-4">
-                                 <div className="p-3 md:p-4 bg-primary rounded-xl md:rounded-2xl text-secondary shadow-lg shadow-primary/20"><UserPlus size={20} /></div>
-                                 <div className="flex flex-col">
-                                    <h3 className="text-xl md:text-2xl font-black italic uppercase text-primary">Beitrittsanfragen</h3>
-                                    <p className="text-[8px] md:text-[10px] font-black uppercase text-primary/60 italic tracking-widest mt-0.5">Status: Restricted Nodes wait for Auth</p>
-                                 </div>
-                              </div>
-                              <div className="grid md:grid-cols-2 gap-3 md:gap-4">
-                                 {joinRequests.map((req) => (
-                                    <div key={req.requestId} className="p-4 md:p-6 bg-card border border-primary/20 rounded-2xl md:rounded-3xl flex items-center justify-between shadow-sm">
-                                       <div className="flex items-center gap-3 text-foreground">
-                                          <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-primary/20 flex items-center justify-center font-black italic text-primary text-xs">{req.userName[0]}</div>
-                                          <div className="font-black italic uppercase text-[10px] md:text-xs">{req.userName}</div>
-                                       </div>
-                                       <div className="flex gap-2">
-                                          <button onClick={() => handleResolveRequest(req.userId, req.userName, true)} className="p-2.5 md:p-3 bg-primary text-secondary rounded-lg md:rounded-xl hover:scale-105 transition-all shadow-md"><Check size={16} /></button>
-                                          <button onClick={() => handleResolveRequest(req.userId, req.userName, false)} className="p-2.5 md:p-3 bg-red-500/10 text-red-500 rounded-lg md:rounded-xl hover:bg-red-500 hover:text-white transition-all border border-red-500/20"><X size={16} /></button>
-                                       </div>
-                                    </div>
-                                 ))}
-                              </div>
-                           </div>
-                        )}
-
                         <div className="bg-card border border-border rounded-[2.5rem] md:rounded-[3.5rem] p-6 md:p-12 space-y-8 md:space-y-12 shadow-2xl">
-                           <div className="flex items-center gap-6 md:gap-8 text-foreground"><ShieldAlert size={32} className="text-primary" /><h2 className="text-2xl md:text-3xl font-black italic uppercase">Netzwerk Admin</h2></div>
+                           <div className="flex items-center gap-6 md:gap-8 text-foreground"><ShieldAlert className="w-8 h-8 md:w-10 md:h-10 text-primary" /><h2 className="text-2xl md:text-3xl font-black italic uppercase">Netzwerk Admin</h2></div>
                            <div className="p-5 md:p-10 bg-foreground/5 rounded-[2rem] md:rounded-[3rem] border border-border">
                               <h3 className="text-[10px] md:text-xs font-black uppercase italic tracking-[0.3em] text-foreground/40 mb-6 md:mb-8 border-b border-border pb-4 text-center">Mitglieder-Verzeichnis</h3>
                               <div className="space-y-4 md:space-y-6 max-h-[400px] overflow-y-auto pr-2 md:pr-4 custom-scrollbar">
@@ -419,7 +425,14 @@ export default function GroupPage() {
                   <motion.div initial={{ opacity: 0, scale: 0.9, y: 50 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9 }} className="relative bg-card text-foreground w-full max-w-lg shadow-2xl rounded-[3.5rem] p-10 border border-border">
                      <div className="space-y-12 flex flex-col items-center">
                         <h3 className="text-4xl font-black italic uppercase tracking-tighter leading-none text-center">Join the <span className="text-primary italic">Qloud.</span></h3>
-                        <div className="bg-white p-8 rounded-[3rem] shadow-2xl border-4 border-slate-50"><QRCodeSVG value={typeof window !== 'undefined' ? window.location.href : '/'} size={220} level="H" /></div>
+                        <div className="bg-white p-8 rounded-[3rem] shadow-2xl border-4 border-slate-50">
+                           <QRCodeCanvas 
+                              value={typeof window !== 'undefined' ? window.location.href : '/'} 
+                              size={220} 
+                              level="H"
+                              includeMargin={true}
+                           />
+                        </div>
                         <div className="w-full space-y-4">
                            <div className="flex gap-2 w-full">
                               <button onClick={handleShare} className="flex-1 py-4 bg-primary text-secondary rounded-2xl font-black italic uppercase text-[10px] flex items-center justify-center gap-2 shadow-lg hover:scale-[1.02] transition-all"><Share2 size={16} /> Link Teilen</button>
@@ -427,9 +440,19 @@ export default function GroupPage() {
                            </div>
                            <div className="grid grid-cols-2 gap-2">
                               <button onClick={handlePrintQR} className="py-4 bg-foreground/5 border border-border rounded-2xl font-black italic uppercase text-[10px] flex items-center justify-center gap-2 hover:bg-foreground/10 transition-all text-foreground/60"><Printer size={16} /> Drucken</button>
-                              <button onClick={() => { const canvas = document.querySelector('canvas'); if (!canvas) return; const link = document.createElement('a'); link.download = `QR-${group.name}.png`; link.href = canvas.toDataURL(); link.click(); }} className="py-4 bg-foreground/5 border border-border rounded-2xl font-black italic uppercase text-[10px] flex items-center justify-center gap-2 hover:bg-foreground/10 transition-all text-foreground/60"><Download size={16} /> Download</button>
+                              <button onClick={() => { 
+                                 const canvas = document.querySelector('canvas'); 
+                                 if (!canvas) return; 
+                                 const link = document.createElement('a'); 
+                                 link.download = `QR-Invite-${group?.name}.png`; 
+                                 link.href = canvas.toDataURL("image/png"); 
+                                 link.click(); 
+                              }} className="py-4 bg-foreground/5 border border-border rounded-2xl font-black italic uppercase text-[10px] flex items-center justify-center gap-2 hover:bg-foreground/10 transition-all text-foreground/60"><Download size={16} /> QR Speichern</button>
                            </div>
-                           <div className="p-6 bg-foreground/5 border border-border rounded-3xl flex items-center justify-between shadow-inner"><code className="text-[10px] font-bold text-foreground/40 truncate mr-4 italic">Identifier: {groupId}</code><button onClick={() => { navigator.clipboard.writeText(window.location.href); setCopied(true); setTimeout(() => setCopied(false), 2000); }} className={`p-4 rounded-xl transition-all shadow-md ${copied ? 'bg-green-500 text-white' : 'bg-foreground/10 text-foreground'}`}>{copied ? <Check size={20} /> : <Copy size={20} />}</button></div>
+                           <div className="p-6 bg-foreground/5 border border-border rounded-3xl flex items-center justify-between shadow-inner">
+                              <code className="text-[10px] font-bold text-foreground/40 truncate mr-4 italic">Identifier: {groupId}</code>
+                              <button onClick={() => { navigator.clipboard.writeText(window.location.href); setCopied(true); setTimeout(() => setCopied(false), 2000); }} className={`p-4 rounded-xl transition-all shadow-md ${copied ? 'bg-green-500 text-white' : 'bg-foreground/10 text-foreground'}`}>{copied ? <Check size={20} /> : <Copy size={20} />}</button>
+                           </div>
                            <p className="text-center text-[10px] font-black uppercase text-foreground/40 italic tracking-widest leading-relaxed mt-4">Gäste müssen eine Beitrittsanfrage senden.<br /> Genehmigung erfolgt durch den Admin.</p>
                         </div>
                      </div>
