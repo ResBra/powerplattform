@@ -381,3 +381,32 @@ export async function deleteGroup(id: string, userId: string) {
     return { error: `Fehler beim Löschen: ${error.message}` };
   }
 }
+
+/**
+ * Entfernt ein Mitglied permanent aus der Gruppe.
+ */
+export async function kickMemberAction(groupId: string, userId: string) {
+  try {
+    const groupRef = doc(db, "groups", groupId);
+    const memberRef = doc(db, "groups", groupId, "members", userId);
+
+    const batch = writeBatch(db);
+
+    // 1. Aus den ID-Listen der Gruppe entfernen
+    batch.update(groupRef, {
+      memberIds: arrayRemove(userId),
+      moderatorIds: arrayRemove(userId),
+      memberCount: increment(-1)
+    });
+
+    // 2. Mitglieds-Dokument löschen
+    batch.delete(memberRef);
+
+    await batch.commit();
+    revalidatePath(`/modules/qloud/${groupId}`);
+    return { success: true };
+  } catch (error: any) {
+    console.error("Error kicking member:", error);
+    return { success: false, error: error.message };
+  }
+}

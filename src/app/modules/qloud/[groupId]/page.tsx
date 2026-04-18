@@ -24,7 +24,8 @@ import {
    Image as ImageIcon,
    Lock,
    UserPlus,
-   MessageCircle
+   MessageCircle,
+   UserMinus
 } from "lucide-react";
 import { auth, db } from "@/lib/firebase";
 import {
@@ -45,7 +46,8 @@ import {
    deleteMediaAction,
    toggleModeratorAction,
    resolveJoinRequestAction,
-   requestJoinAction
+   requestJoinAction,
+   kickMemberAction
 } from "../actions";
 import { QRCodeCanvas } from "qrcode.react";
 import { upload } from '@vercel/blob/client';
@@ -179,6 +181,11 @@ export default function GroupPage() {
       } catch (err: any) { alert("Upload fehlgeschlagen."); } finally { setIsUploading(false); }
    };
 
+   const handleApproveMedia = async (mediaId: string) => {
+      if (!isModerator) return;
+      await approveMediaAction(groupId as string, mediaId);
+   };
+
    const handleDeleteMedia = async (mediaId: string) => {
       if (!isModerator || !window.confirm("Dieses Bild permanent entfernen?")) return;
       await deleteMediaAction(groupId as string, mediaId);
@@ -192,6 +199,19 @@ export default function GroupPage() {
          if (!res.success) alert("Fehler: " + res.error);
       } catch (err) {
          alert("Verbindungsfehler bei der Rollenänderung.");
+      } finally {
+         setProcessingMemberId(null);
+      }
+   };
+
+   const handleKickMember = async (targetUserId: string, targetUserName: string) => {
+      if (!isAdmin || !window.confirm(`Möchtest du ${targetUserName} wirklich aus der Qloud entfernen?`)) return;
+      setProcessingMemberId(targetUserId);
+      try {
+         const res = await kickMemberAction(groupId as string, targetUserId);
+         if (!res.success) alert("Fehler: " + res.error);
+      } catch (err) {
+         alert("Verbindungsfehler beim Entfernen des Mitglieds.");
       } finally {
          setProcessingMemberId(null);
       }
@@ -309,7 +329,7 @@ export default function GroupPage() {
             <nav className="flex items-center gap-2 p-1.5 bg-foreground/5 rounded-2xl border border-border w-fit overflow-x-auto max-w-full">
                <button onClick={() => setActiveTab("chat")} className={`px-8 py-4 rounded-xl text-[10px] font-black italic uppercase transition-all ${activeTab === 'chat' ? 'bg-primary text-secondary' : 'text-foreground/40'}`}>Feed</button>
                <button onClick={() => setActiveTab("gallery")} className={`px-8 py-4 rounded-xl text-[10px] font-black italic uppercase transition-all ${activeTab === 'gallery' ? 'bg-primary text-secondary' : 'text-foreground/40'}`}>Galerie {approvedMedia.length > 0 && `(${approvedMedia.length})`}</button>
-               {isModerator && <button onClick={() => setActiveTab("moderation")} className={`px-8 py-4 rounded-xl text-[10px] font-black italic uppercase transition-all ${activeTab === 'moderation' ? 'bg-amber-500 text-black shadow-lg animate-pulse' : 'text-amber-500/40'}`}>Moderation {pendingMedia.length > 0 && <span className="text-[8px]">{pendingMedia.length}</span>}</button>}
+               {(isModerator || isAdmin) && <button onClick={() => setActiveTab("moderation")} className={`px-8 py-4 rounded-xl text-[10px] font-black italic uppercase transition-all ${activeTab === 'moderation' ? 'bg-amber-500 text-black shadow-lg animate-pulse' : 'text-amber-500/40'}`}>Moderation {(pendingMedia.length + joinRequests.length) > 0 && <span className="text-[8px] ml-1">({pendingMedia.length + joinRequests.length})</span>}</button>}
                {isAdmin && <button onClick={() => setActiveTab("admin")} className={`px-8 py-4 rounded-xl text-[10px] font-black italic uppercase transition-all ${activeTab === 'admin' ? 'bg-foreground text-background shadow-lg' : 'text-foreground/40'}`}>Admin</button>}
             </nav>
 
@@ -358,58 +378,113 @@ export default function GroupPage() {
                      </motion.section>
                   )}
 
-                  {activeTab === "moderation" && isModerator && (
-                     <motion.section key="moderation" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="space-y-8">
+                  {activeTab === "moderation" && (isModerator || isAdmin) && (
+                     <motion.section key="moderation" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="space-y-12">
+                        {/* 1. BEITRITTSANFRAGEN */}
                         <div className="bg-amber-500/10 border border-amber-500/20 rounded-[2rem] p-6 md:p-10 space-y-8 shadow-xl">
                            <div className="flex items-center gap-4">
-                              <div className="p-4 bg-amber-500 rounded-2xl text-black"><ShieldCheck size={24} /></div>
-                              <h2 className="text-2xl font-black italic uppercase text-amber-500">Member Requests</h2>
+                              <div className="p-4 bg-amber-500 rounded-2xl text-black"><CheckCircle2 size={24} /></div>
+                              <h2 className="text-2xl font-black italic uppercase text-amber-500">Zutritts-Anfragen</h2>
                            </div>
                            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                               {joinRequests.map((req) => (
                                  <div key={req.requestId} className="p-6 bg-card border border-border rounded-[2rem] flex items-center justify-between shadow-2xl">
-                                    <span className="font-black italic uppercase text-xs">{req.userName}</span>
+                                    <span className="font-black italic uppercase text-xs truncate max-w-[120px]">{req.userName}</span>
                                     <div className="flex gap-2">
                                        <button onClick={() => handleResolveRequest(req.userId, req.userName, true)} className="p-3 bg-green-500 text-white rounded-xl hover:scale-110 transition-all"><Check size={18} /></button>
                                        <button onClick={() => handleResolveRequest(req.userId, req.userName, false)} className="p-3 bg-red-500 text-white rounded-xl hover:scale-110 transition-all"><X size={18} /></button>
                                     </div>
                                  </div>
                               ))}
-                              {joinRequests.length === 0 && <p className="col-span-full py-10 text-center text-foreground/20 font-black italic uppercase tracking-widest">Keine offenen Anfragen</p>}
+                              {joinRequests.length === 0 && <p className="col-span-full py-10 text-center text-foreground/20 font-black italic uppercase tracking-widest text-[10px]">Keine offenen Anfragen</p>}
+                           </div>
+                        </div>
+
+                        {/* 2. BILD-FREIGABE */}
+                        <div className="bg-primary/5 border border-primary/20 rounded-[2rem] p-6 md:p-10 space-y-8 shadow-xl">
+                           <div className="flex items-center gap-4">
+                              <div className="p-4 bg-primary rounded-2xl text-secondary"><ImageIcon size={24} /></div>
+                              <h2 className="text-2xl font-black italic uppercase text-primary">Medien Freigabe</h2>
+                           </div>
+                           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                              {pendingMedia.map((item) => (
+                                 <div key={item.id} className="relative aspect-square rounded-2xl overflow-hidden border border-border group">
+                                    <img src={item.url} className="w-full h-full object-cover" />
+                                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center p-4 gap-4">
+                                       <p className="text-[8px] font-black uppercase text-white/50 text-center">{item.userName}</p>
+                                       <div className="flex gap-3">
+                                          <button onClick={() => handleApproveMedia(item.id)} className="p-4 bg-green-500 text-white rounded-full hover:scale-110 transition-all shadow-lg"><Check size={20} /></button>
+                                          <button onClick={() => handleDeleteMedia(item.id)} className="p-4 bg-red-500 text-white rounded-full hover:scale-110 transition-all shadow-lg"><X size={20} /></button>
+                                       </div>
+                                    </div>
+                                 </div>
+                              ))}
+                              {pendingMedia.length === 0 && <p className="col-span-full py-10 text-center text-foreground/20 font-black italic uppercase tracking-widest text-[10px]">Alle Medien gesichtet</p>}
                            </div>
                         </div>
                      </motion.section>
                   )}
 
                   {isAdmin && activeTab === "admin" && (
-                     <motion.section key="admin" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-8 md:space-y-12">
-                        <div className="bg-card border border-border rounded-[2.5rem] md:rounded-[3.5rem] p-6 md:p-12 space-y-8 md:space-y-12 shadow-2xl">
-                           <div className="flex items-center gap-6 md:gap-8 text-foreground"><ShieldAlert className="w-8 h-8 md:w-10 md:h-10 text-primary" /><h2 className="text-2xl md:text-3xl font-black italic uppercase">Netzwerk Admin</h2></div>
-                           <div className="p-5 md:p-10 bg-foreground/5 rounded-[2rem] md:rounded-[3rem] border border-border">
-                              <h3 className="text-[10px] md:text-xs font-black uppercase italic tracking-[0.3em] text-foreground/40 mb-6 md:mb-8 border-b border-border pb-4 text-center">Mitglieder-Verzeichnis</h3>
-                              <div className="space-y-4 md:space-y-6 max-h-[400px] overflow-y-auto pr-2 md:pr-4 custom-scrollbar">
+                     <motion.section key="admin" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
+                        {/* MITGLIEDER VERWALTUNG 2.0 */}
+                        <div className="bg-card border border-border rounded-[2.5rem] md:rounded-[4rem] p-6 md:p-12 space-y-12 shadow-[0_40px_100px_-20px_rgba(0,0,0,0.5)] border-t-white/5 relative overflow-hidden">
+                           <div className="absolute top-0 right-0 p-10 opacity-5 pointer-events-none"><Users size={300} /></div>
+                           
+                           <div className="relative">
+                              <div className="flex items-center gap-6 mb-12">
+                                 <div className="p-5 bg-primary rounded-3xl text-secondary shadow-2xl shadow-primary/30"><Users size={32} /></div>
+                                 <div>
+                                    <h2 className="text-4xl font-black italic uppercase text-foreground leading-none">Management</h2>
+                                    <p className="text-[10px] font-black uppercase text-primary italic tracking-widest mt-2">Node Member Directory & Permissions</p>
+                                 </div>
+                              </div>
+
+                              <div className="grid gap-6">
                                  {group.members?.map((m: any, i: number) => (
-                                    <div key={i} className="p-4 md:p-6 bg-card border border-border rounded-2xl md:rounded-[2rem] flex justify-between items-center shadow-sm hover:border-primary/20 transition-all">
-                                       <div className="flex items-center gap-3 md:gap-4 text-foreground">
-                                          <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-foreground/10 flex items-center justify-center text-foreground/60 font-black italic">{m.name?.[0]}</div>
-                                          <div className="flex flex-col"><span className="text-sm md:text-base font-black italic uppercase">{m.name || "Gast"}</span><span className="text-[8px] md:text-[9px] font-black uppercase text-foreground/30 italic tracking-widest">{m.role}</span></div>
+                                    <div key={i} className="group p-6 bg-foreground/[0.03] border border-white/5 rounded-[2rem] flex flex-col sm:flex-row justify-between items-center gap-6 hover:bg-foreground/[0.05] transition-all hover:border-primary/20">
+                                       <div className="flex items-center gap-6 w-full sm:w-auto">
+                                          <div className={`w-16 h-16 rounded-2xl flex items-center justify-center font-black italic text-xl shadow-inner ${m.role === 'admin' ? 'bg-primary text-secondary' : m.role === 'moderator' ? 'bg-amber-500 text-black' : 'bg-foreground/10 text-foreground/40'}`}>
+                                             {m.name?.[0] || "?"}
+                                          </div>
+                                          <div>
+                                             <div className="flex items-center gap-3">
+                                                <span className="text-xl font-black italic uppercase text-foreground">{m.name || "Gast"}</span>
+                                                {m.role === 'admin' && <span className="px-3 py-1 bg-primary/10 border border-primary/20 text-primary text-[8px] font-black uppercase italic rounded-full">Owner</span>}
+                                                {m.role === 'moderator' && <span className="px-3 py-1 bg-amber-500/10 border border-amber-500/20 text-amber-500 text-[8px] font-black uppercase italic rounded-full">Mod</span>}
+                                             </div>
+                                             <p className="text-[8px] font-black uppercase text-foreground/30 italic tracking-widest mt-1">ID: {m.userId.slice(0, 12)}...</p>
+                                          </div>
                                        </div>
+
                                        {group.adminId !== m.userId && (
-                                          <button 
-                                             disabled={processingMemberId === m.userId}
-                                             onClick={() => handleToggleModerator(m.userId)} 
-                                             className={`px-4 py-2 md:px-5 md:py-3 rounded-xl md:rounded-2xl transition-all text-[8px] md:text-[10px] font-black uppercase italic shadow-sm flex items-center gap-2 ${m.role === 'moderator' ? 'bg-amber-100 text-amber-700 border border-amber-200' : 'bg-foreground/5 text-foreground/40 border border-border'}`}
-                                          >
-                                             {processingMemberId === m.userId ? <Clock className="animate-spin" size={12} /> : null}
-                                             Moderator
-                                          </button>
+                                          <div className="flex items-center gap-3 w-full sm:w-auto">
+                                             <button 
+                                                disabled={processingMemberId === m.userId}
+                                                onClick={() => handleToggleModerator(m.userId)} 
+                                                className={`flex-1 sm:flex-none px-8 py-4 rounded-xl font-black uppercase italic text-[10px] transition-all flex items-center justify-center gap-3 ${m.role === 'moderator' ? 'bg-amber-500 text-black' : 'bg-foreground/10 text-foreground/40 hover:bg-foreground/20'}`}
+                                             >
+                                                {processingMemberId === m.userId ? <Clock className="animate-spin" size={12} /> : <ShieldCheck size={16} />}
+                                                {m.role === 'moderator' ? 'Mod-Rechte entziehen' : 'Zum Moderator machen'}
+                                             </button>
+                                             
+                                             <button 
+                                                disabled={processingMemberId === m.userId}
+                                                onClick={() => handleKickMember(m.userId, m.name)} 
+                                                className="p-4 bg-red-500/10 text-red-500 border border-red-500/20 rounded-xl hover:bg-red-500 hover:text-white transition-all shadow-lg"
+                                             >
+                                                {processingMemberId === m.userId ? <Clock className="animate-spin" size={16} /> : <UserMinus size={18} />}
+                                             </button>
+                                          </div>
                                        )}
                                     </div>
                                  ))}
                               </div>
                            </div>
-                           <div className="pt-8 md:pt-12 border-t border-border flex flex-col items-center">
-                              <button onClick={handleDeleteGroup} className="w-full py-6 md:py-8 bg-red-500/10 text-red-500 border border-red-500/20 font-black italic uppercase rounded-[1.5rem] md:rounded-[2.5rem] hover:bg-red-500 hover:text-white transition-all shadow-sm text-xs md:text-sm">Node permanent löschen</button>
+
+                           <div className="pt-12 border-t border-white/5 flex flex-col items-center">
+                              <p className="text-[10px] font-black uppercase text-red-500/40 italic mb-6 tracking-tighter">Gefahrenzone: Permanenten Löschvorgang einleiten</p>
+                              <button onClick={handleDeleteGroup} className="w-full py-8 md:py-10 bg-red-500/5 text-red-500 border border-red-500/20 font-black italic uppercase rounded-[2rem] md:rounded-[3rem] hover:bg-red-500 hover:text-white transition-all shadow-2xl text-xs md:text-sm tracking-[0.3em]">Destruct Node</button>
                            </div>
                         </div>
                      </motion.section>
@@ -418,6 +493,7 @@ export default function GroupPage() {
             </main>
          </div>
 
+         {/* QR MODAL (Restored & Enhanced) */}
          <AnimatePresence>
             {isQrOpen && (
                <div className="fixed inset-0 z-[1000] flex items-center justify-center p-6">
@@ -461,6 +537,7 @@ export default function GroupPage() {
             )}
          </AnimatePresence>
 
+         {/* FULL IMAGE MODAL */}
          <AnimatePresence>
             {selectedImage && (
                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[2000] bg-black/98 backdrop-blur-3xl flex items-center justify-center p-4">
@@ -472,7 +549,7 @@ export default function GroupPage() {
                            <span className="text-[8px] font-black uppercase text-primary tracking-[0.3em] italic mb-1">Captured Node</span>
                            <span className="text-3xl font-black italic uppercase text-white tracking-tighter leading-none">{selectedImage.userName}</span>
                         </div>
-                        <button onClick={() => handleDownload(selectedImage.url, "bild.jpg")} className="px-10 py-5 bg-primary text-secondary rounded-[1.5rem] font-black italic uppercase text-xs flex items-center gap-4 shadow-2xl shadow-primary/20"><Download size={20} /> Download</button>
+                        <button onClick={() => handleDownload(selectedImage.url, `qloud-capture-${selectedImage.userName}.jpg`)} className="px-10 py-5 bg-primary text-secondary rounded-[1.5rem] font-black italic uppercase text-xs flex items-center gap-4 shadow-2xl shadow-primary/20"><Download size={20} /> Download</button>
                      </div>
                   </motion.div>
                </motion.div>
