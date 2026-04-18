@@ -12,6 +12,7 @@ import {
   orderBy, 
   serverTimestamp,
   updateDoc,
+  deleteDoc,
   arrayUnion,
   Timestamp
 } from "firebase/firestore";
@@ -54,9 +55,16 @@ export async function getListingsAction(filters?: { category?: string; city?: st
     }
     
     const snap = await getDocs(q);
-    const listings = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    const listings = snap.docs.map(d => {
+      const data = d.data();
+      return { 
+        id: d.id, 
+        ...data,
+        createdAt: data.createdAt?.toMillis?.() || Date.now()
+      };
+    });
     
-    // Clientseitige Filterung für Stadt (da Firestore multiple Inequality/Queries einschränkt ohne Indizes)
+    // Clientseitige Filterung für Stadt
     if (filters?.city) {
       return listings.filter((l: any) => l.city.toLowerCase().includes(filters.city!.toLowerCase()));
     }
@@ -71,7 +79,6 @@ export async function getListingsAction(filters?: { category?: string; city?: st
 // 💬 CHAT INITIALISIEREN ODER FINDEN
 export async function getOrCreateChatAction(listingId: string, buyerId: string, sellerId: string, listingTitle: string, listingImage: string) {
   try {
-    // Suche nach existierendem Chat für dieses Produkt zwischen diesen beiden Personen
     const q = query(
       collection(db, "market_chats"),
       where("listingId", "==", listingId),
@@ -88,7 +95,6 @@ export async function getOrCreateChatAction(listingId: string, buyerId: string, 
       return { success: true, chatId: existingChat.id };
     }
 
-    // Neuer Chat
     const docRef = await addDoc(collection(db, "market_chats"), {
       listingId,
       participants: [buyerId, sellerId],
@@ -119,6 +125,47 @@ export async function sendMessageAction(chatId: string, senderId: string, text: 
       updatedAt: serverTimestamp()
     });
 
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+}
+
+// 📝 ANGEBOT AKTUALISIEREN
+export async function updateListingAction(listingId: string, userId: string, data: Partial<MarketListing>) {
+  try {
+    const docRef = doc(db, "market_listings", listingId);
+    const snap = await getDoc(docRef);
+    
+    if (!snap.exists() || snap.data().sellerId !== userId) {
+      return { success: false, error: "Nicht autorisiert oder Inserat nicht gefunden." };
+    }
+
+    await updateDoc(docRef, {
+      ...data,
+      updatedAt: serverTimestamp()
+    });
+
+    revalidatePath("/modules/market");
+    revalidatePath(`/modules/market/listing/${listingId}`);
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+}
+
+// 🗑️ ANGEBOT LÖSCHEN
+export async function deleteListingAction(listingId: string, userId: string) {
+  try {
+    const docRef = doc(db, "market_listings", listingId);
+    const snap = await getDoc(docRef);
+
+    if (!snap.exists() || snap.data().sellerId !== userId) {
+      return { success: false, error: "Nicht autorisiert." };
+    }
+
+    await deleteDoc(docRef);
+    revalidatePath("/modules/market");
     return { success: true };
   } catch (err: any) {
     return { success: false, error: err.message };

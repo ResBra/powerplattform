@@ -15,11 +15,13 @@ import {
   ShieldCheck,
   Zap,
   Info,
-  DollarSign
+  DollarSign,
+  Edit,
+  Trash2
 } from "lucide-react";
 import { auth, db } from "@/lib/firebase";
 import { doc, getDoc } from "firebase/firestore";
-import { getOrCreateChatAction } from "../../actions";
+import { getOrCreateChatAction, deleteListingAction } from "../../actions";
 
 export default function ListingDetail() {
   const { listingId } = useParams();
@@ -27,6 +29,7 @@ export default function ListingDetail() {
   const [listing, setListing] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [isRedirecting, setIsRedirecting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     async function loadListing() {
@@ -67,6 +70,22 @@ export default function ListingDetail() {
       setIsRedirecting(false);
     }
   };
+
+  const handleDelete = async () => {
+    if (!auth.currentUser || !listing) return;
+    if (!confirm("Möchtest du dieses Inserat wirklich löschen?")) return;
+
+    setIsDeleting(true);
+    const result = await deleteListingAction(listing.id, auth.currentUser.uid);
+    if (result.success) {
+      router.push("/modules/market");
+    } else {
+      alert("Fehler beim Löschen.");
+      setIsDeleting(false);
+    }
+  };
+
+  const isOwner = auth.currentUser?.uid === listing?.sellerId;
 
   if (loading) {
     return (
@@ -140,19 +159,37 @@ export default function ListingDetail() {
                           </div>
                        </div>
                        
-                       <button 
-                         onClick={handleContactSeller}
-                         disabled={isRedirecting}
-                         className="w-full bg-primary text-secondary font-black italic uppercase tracking-widest py-8 rounded-[2rem] shadow-2xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-4 disabled:opacity-50"
-                       >
-                         {isRedirecting ? (
-                            <div className="w-6 h-6 border-2 border-secondary/20 border-t-secondary rounded-full animate-spin"></div>
-                         ) : (
-                            <>
-                              <MessageCircle size={20} /> Verkäufer Kontaktieren
-                            </>
-                         )}
-                       </button>
+                       {isOwner ? (
+                         <div className="grid grid-cols-2 gap-4">
+                            <button 
+                              onClick={() => router.push(`/modules/market/edit/${listing.id}`)}
+                              className="w-full bg-white/10 text-white font-black italic uppercase tracking-widest py-6 rounded-[2rem] border border-white/10 hover:bg-white/20 transition-all flex items-center justify-center gap-3"
+                            >
+                               <Edit size={18} /> Bearbeiten
+                            </button>
+                            <button 
+                              onClick={handleDelete}
+                              disabled={isDeleting}
+                              className="w-full bg-red-500/10 text-red-500 font-black italic uppercase tracking-widest py-6 rounded-[2rem] border border-red-500/20 hover:bg-red-500/20 transition-all flex items-center justify-center gap-3 disabled:opacity-50"
+                            >
+                               {isDeleting ? <div className="w-5 h-5 border-2 border-red-500/20 border-t-red-500 rounded-full animate-spin"></div> : <><Trash2 size={18} /> Löschen</>}
+                            </button>
+                         </div>
+                       ) : (
+                         <button 
+                           onClick={handleContactSeller}
+                           disabled={isRedirecting}
+                           className="w-full bg-primary text-secondary font-black italic uppercase tracking-widest py-8 rounded-[2rem] shadow-2xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-4 disabled:opacity-50"
+                         >
+                           {isRedirecting ? (
+                              <div className="w-6 h-6 border-2 border-secondary/20 border-t-secondary rounded-full animate-spin"></div>
+                           ) : (
+                              <>
+                                <MessageCircle size={20} /> Verkäufer Kontaktieren
+                              </>
+                           )}
+                         </button>
+                       )}
                     </div>
 
                     <div className="pt-6 border-t border-white/5 space-y-6">

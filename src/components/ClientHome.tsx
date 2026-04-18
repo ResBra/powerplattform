@@ -110,7 +110,7 @@ export default function ClientHome({ settings }: any) {
   return (
     <div className="space-y-12 md:space-y-20 pb-20 max-w-full overflow-hidden">
       
-      {/* SHOWCASE HERO SECTION - FIXED RESPONSIVENESS */}
+      {/* SHOWCASE HERO SECTION - LIQUID BRANDING V1.6.2 */}
       <section className="relative p-6 md:p-16 lg:p-20 bg-card border border-white/5 rounded-[2.5rem] md:rounded-[4rem] lg:rounded-[5rem] overflow-hidden shadow-2xl">
         <div className="absolute top-0 right-0 p-12 opacity-5 pointer-events-none -rotate-12 translate-x-1/4 hidden lg:block">
             <Terminal size={400} />
@@ -118,25 +118,32 @@ export default function ClientHome({ settings }: any) {
         
         <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-10 md:gap-16 items-center">
           <div className="space-y-6 md:space-y-10">
-            <div className="space-y-4">
-               <div className="px-4 py-1.5 bg-primary/10 border border-primary/20 rounded-full w-fit">
-                  <span className="text-[9px] md:text-[10px] font-black uppercase text-primary italic tracking-[0.2em]">Service Showcase v1.6</span>
+            <div className="space-y-0 -mt-2">
+               <div className="flex flex-col">
+                  <span className="text-[clamp(3.5rem,15.5vw,10rem)] font-black italic uppercase tracking-tighter text-foreground leading-[0.8] drop-shadow-2xl">
+                     Power
+                  </span>
+                  <span className="text-[clamp(3.5rem,15.5vw,10rem)] font-black italic uppercase tracking-tighter text-primary leading-[0.8] mt-2 drop-shadow-2xl">
+                     Plattform.
+                  </span>
                </div>
-               <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black italic uppercase tracking-tighter text-foreground leading-[0.9] break-words">
-                  Power<span className="text-primary">Plattform.</span>
-               </h1>
+               <div className="pt-8">
+                  <div className="px-4 py-1.5 bg-primary/10 border border-primary/20 rounded-full w-fit">
+                     <span className="text-[8px] md:text-[10px] font-black uppercase text-primary italic tracking-[0.2em]">Service Showcase v1.6.2</span>
+                  </div>
+               </div>
             </div>
 
-            <p className="text-foreground/60 text-sm md:text-xl italic font-medium leading-relaxed max-w-xl">
-              Dieses Portal dient zur Veranschaulichung unserer Programmierdienstleistungen. 
-              Wir entwickeln hochspezifische <span className="text-white italic">Boutique-Software</span>, exakt auf deine Anforderungen zugeschnitten.
+            <p className="text-foreground/70 text-sm md:text-xl italic font-medium leading-relaxed max-w-xl">
+               Dieses Portal dient zur Veranschaulichung unserer Programmierdienstleistungen. 
+               Wir entwickeln <span className="text-white font-bold italic underline decoration-primary/40 underline-offset-8">Boutique-Software</span>, die exakt deinen Anforderungen entspricht.
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
                {services.map((s) => (
-                 <div key={s.title} className="p-4 md:p-6 bg-foreground/5 border border-white/5 rounded-2xl space-y-2 md:space-y-3 hover:bg-foreground/10 transition-colors">
+                 <div key={s.title} className="p-4 md:p-6 bg-foreground/5 border border-white/5 rounded-2xl space-y-2 md:space-y-3 hover:bg-foreground/10 transition-colors group">
                     <div className="flex items-center gap-3">
-                       {s.icon}
+                       <span className="group-hover:scale-110 transition-transform duration-500">{s.icon}</span>
                        <span className="text-[10px] md:text-xs font-black uppercase italic tracking-widest text-foreground">{s.title}</span>
                     </div>
                     <p className="text-[9px] md:text-[10px] text-foreground/40 font-medium italic leading-relaxed">{s.desc}</p>
@@ -200,7 +207,6 @@ export default function ClientHome({ settings }: any) {
               onClick={() => router.push(engine.href)}
               className="group relative p-8 md:p-12 bg-card border border-border rounded-[3rem] md:rounded-[4rem] shadow-sm hover:shadow-2xl hover:shadow-primary/10 transition-all duration-700 cursor-pointer overflow-hidden min-h-[350px] md:min-h-[400px] flex flex-col justify-between"
             >
-              {/* IMAGE BACKGROUND WITH OVERLAY */}
               <div className="absolute inset-0 z-0">
                  <img 
                    src={engine.bgImage} 
@@ -235,7 +241,6 @@ export default function ClientHome({ settings }: any) {
         </div>
       </section>
 
-      {/* METRICS & FOOTER PREVIEW */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 pb-20 opacity-40 hover:opacity-100 transition-opacity px-2 md:px-0">
           <div className="bg-card p-4 md:p-6 rounded-2xl md:rounded-3xl border border-border flex flex-col gap-3">
              <Cpu className="text-foreground/20" size={16} />

@@ -82,10 +82,14 @@ export async function getPendingRequestsAction(groupId: string) {
     );
     
     const snapshot = await getDocs(q);
-    return snapshot.docs.map(d => ({
-      id: d.id,
-      ...d.data()
-    }));
+    return snapshot.docs.map(d => {
+      const data = d.data();
+      return {
+        id: d.id,
+        ...data,
+        requestedAt: data.requestedAt?.toMillis?.() || Date.now()
+      };
+    });
   } catch (error) {
     console.error("Fetch requests error:", error);
     return [];
@@ -209,17 +213,21 @@ export async function getGroupDetails(id: string) {
 
     const data = docSnap.data();
     
-    // Mitglieder aus Subcollection laden
     const membersSnap = await getDocs(collection(db, "groups", id, "members"));
-    const members = membersSnap.docs.map(d => ({
-      userId: d.id,
-      ...d.data()
-    }));
+    const members = membersSnap.docs.map(d => {
+      const mData = d.data();
+      return {
+        userId: d.id,
+        ...mData,
+        joinedAt: mData.joinedAt?.toMillis?.() || Date.now()
+      };
+    });
 
     return {
       id: docSnap.id,
       ...data,
       name: data.displayName || data.name,
+      createdAt: data.createdAt?.toMillis?.() || Date.now(),
       members: members
     };
   } catch (error) {
