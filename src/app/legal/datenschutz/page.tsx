@@ -57,10 +57,10 @@ export default function DatenschutzPage() {
                  <div className="p-6 bg-white/5 rounded-2xl border border-white/5 space-y-2">
                     <div className="flex items-center gap-3 text-white mb-2">
                        <Globe size={18} className="text-primary" />
-                       <span className="text-sm font-black uppercase tracking-widest">Vercel Hosting & Blob</span>
+                       <span className="text-sm font-black uppercase tracking-widest">Cloud Hosting & Firebase Storage</span>
                     </div>
                     <p className="text-xs">
-                       Die App wird auf Vercel gehostet. Medieninhalte (Bilder im Marktplatz) werden über den Vercel Blob Storage gespeichert. Hierbei werden Zugriffsdaten wie die IP-Adresse kurzzeitig zur Bereitstellung der Inhalte verarbeitet.
+                       Die App wird auf Vercel gehostet. Medieninhalte (Bilder im Marktplatz) werden sicher über Firebase Storage (Google Cloud) gespeichert. Hierbei werden Zugriffsdaten zur Bereitstellung der Inhalte verarbeitet.
                     </p>
                  </div>
               </div>

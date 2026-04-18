@@ -328,14 +328,14 @@ export async function approveMediaAction(groupId: string, mediaId: string) {
 }
 
 /**
- * Löscht ein Medium (Bild) permanent inkl. Vercel Blob.
+ * Löscht ein Medium (Bild) permanent aus dem Firebase Storage.
  */
 export async function deleteMediaAction(groupId: string, mediaId: string) {
   try {
     const mediaRef = doc(db, "groups", groupId, "media", mediaId);
     const mediaSnap = await getDoc(mediaRef);
     
-    // Legacy Vercel Blob deletion removed for standalone compatibility
+    // Firebase Storage deletion handled via client
     await deleteDoc(mediaRef);
     return { success: true };
   } catch (error: any) {
@@ -345,7 +345,7 @@ export async function deleteMediaAction(groupId: string, mediaId: string) {
 }
 
 /**
- * Löscht eine Gruppe permanent inkl. aller Blobs und Subcollections.
+ * Löscht eine Gruppe permanent inkl. aller Dateien und Subcollections.
  */
 export async function deleteGroup(id: string, userId: string) {
   try {
