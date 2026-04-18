@@ -11,7 +11,7 @@ import {
   ConfirmationResult
 } from "firebase/auth";
 import { auth, googleProvider } from "@/lib/firebase";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { createSession } from "@/app/actions/auth";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
@@ -41,6 +41,16 @@ export default function LoginPage() {
   const [isPending, setIsPending] = useState(false);
   const [mounted, setMounted] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("callbackUrl");
+
+  const redirectToDestination = () => {
+    if (callbackUrl) {
+      router.push(decodeURIComponent(callbackUrl));
+    } else {
+      router.push("/dashboard");
+    }
+  };
 
   useEffect(() => {
     setMounted(true);
@@ -75,7 +85,7 @@ export default function LoginPage() {
         id: result.user.uid, 
         username: result.user.email || result.user.displayName || "Google User" 
       });
-      router.push("/dashboard");
+      redirectToDestination();
     } catch (err: any) {
       console.error("DEBUG AUTH ERROR:", err.code);
       if (err.code === "auth/unauthorized-domain") {
@@ -93,7 +103,7 @@ export default function LoginPage() {
     try {
       const result = await signInAnonymously(auth);
       await createSession({ id: result.user.uid, username: "Gast-User" });
-      router.push("/dashboard");
+      redirectToDestination();
     } catch (err: any) {
       setError("Gast-Login fehlgeschlagen.");
       setIsPending(false);
@@ -113,7 +123,7 @@ export default function LoginPage() {
         const result = await signInWithEmailAndPassword(auth, email, password);
         await createSession({ id: result.user.uid, username: result.user.email || email });
       }
-      router.push("/dashboard");
+      redirectToDestination();
     } catch (err: any) {
       console.error("Auth Error Code:", err.code);
       
@@ -164,7 +174,7 @@ export default function LoginPage() {
         id: result.user?.uid || "phone-user", 
         username: result.user?.phoneNumber || "Phone User" 
       });
-      router.push("/dashboard");
+      redirectToDestination();
     } catch (err: any) {
       setError("Falscher Verifizierungs-Code.");
       setIsPending(false);
