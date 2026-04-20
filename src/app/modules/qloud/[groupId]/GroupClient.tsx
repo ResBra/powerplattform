@@ -271,7 +271,13 @@ export default function GroupClient() {
       } catch (error) { window.open(url, '_blank'); }
    };
 
-   if (!group || !user) return <div className="p-20 text-center font-black animate-pulse opacity-10 uppercase tracking-widest text-foreground">Authorizing...</div>;
+   if (!group || !user) {
+      return (
+         <SiteLayoutClient activePage="qloud">
+            <div className="p-20 text-center font-black animate-pulse opacity-10 uppercase tracking-widest text-foreground">Authorizing...</div>
+         </SiteLayoutClient>
+      );
+   }
 
    if (!isMember) {
       return (
