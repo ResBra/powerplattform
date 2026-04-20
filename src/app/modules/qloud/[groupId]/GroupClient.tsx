@@ -415,7 +415,7 @@ export default function GroupClient() {
                               {pendingMedia.map((item) => (
                                  <div key={item.id} className="relative aspect-square rounded-2xl overflow-hidden border border-border group">
                                     <img src={item.url} className="w-full h-full object-cover" />
-                                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center p-4 gap-4">
+                                    <div className="absolute inset-0 bg-black/40 md:bg-black/60 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center p-4 gap-4">
                                        <p className="text-[8px] font-black uppercase text-white/50 text-center">{item.userName}</p>
                                        <div className="flex gap-3">
                                           <button onClick={() => handleApproveMedia(item.id)} className="p-4 bg-green-500 text-white rounded-full hover:scale-110 transition-all shadow-lg"><Check size={20} /></button>
