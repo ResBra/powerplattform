@@ -149,7 +149,7 @@ export default function ClientHome({ settings: initialSettings }: any) {
 
             <p className="text-foreground/70 text-sm md:text-xl italic font-medium leading-relaxed max-w-xl">
                Dieses Portal dient zur Veranschaulichung unserer Programmierdienstleistungen. 
-               Wir entwickeln <span className="text-white font-bold italic underline decoration-primary/40 underline-offset-8">Boutique-Software</span>, die exakt deinen Anforderungen entspricht.
+               Wir entwickeln <span className="text-primary font-bold italic underline decoration-primary/40 underline-offset-8">Boutique-Software</span>, die exakt deinen Anforderungen entspricht.
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
@@ -167,7 +167,7 @@ export default function ClientHome({ settings: initialSettings }: any) {
 
           <div className="relative w-full lg:max-w-md ml-auto">
              <div className="absolute inset-0 bg-primary/10 blur-[40px] md:blur-[60px] rounded-full"></div>
-             <div className="relative bg-black/40 backdrop-blur-md border border-white/10 rounded-[2.5rem] md:rounded-[3rem] p-6 md:p-10 space-y-6 md:space-y-8 shadow-2xl">
+             <div className="relative glass rounded-[2.5rem] md:rounded-[3rem] p-6 md:p-10 space-y-6 md:space-y-8 shadow-2xl">
                 <div className="flex items-center gap-4 border-b border-white/5 pb-4 md:pb-6">
                    <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-primary flex items-center justify-center text-secondary shadow-lg shadow-primary/20">
                       <Layers size={24} />
@@ -220,13 +220,14 @@ export default function ClientHome({ settings: initialSettings }: any) {
               onClick={() => router.push(engine.href)}
               className="group relative p-8 md:p-12 bg-card border border-border rounded-[3rem] md:rounded-[4rem] shadow-sm hover:shadow-2xl hover:shadow-primary/10 transition-all duration-700 cursor-pointer overflow-hidden min-h-[350px] md:min-h-[400px] flex flex-col justify-between"
             >
-              <div className="absolute inset-0 z-0">
+               <div className="absolute inset-0 z-0">
                  <img 
                    src={engine.bgImage} 
                    alt="" 
-                   className="w-full h-full object-cover opacity-20 group-hover:opacity-40 group-hover:scale-110 transition-all duration-1000" 
+                   className="w-full h-full object-cover opacity-20 md:opacity-30 group-hover:opacity-50 group-hover:scale-110 transition-all duration-1000" 
                  />
-                 <div className={`absolute inset-0 bg-gradient-to-t from-black via-black/80 to-transparent group-hover:from-primary/20 transition-colors duration-700`}></div>
+                 {/* GRADIENT CONTROL: 'from-card' (Light Mode: White / Dark Mode: Dark) - Adjust here for shadow/depth */}
+                 <div className={`absolute inset-0 bg-gradient-to-t from-card via-card/80 md:via-card/40 to-transparent group-hover:from-primary/20 transition-all duration-700`}></div>
               </div>
               
               <div className="relative z-10 flex flex-col h-full gap-10">
