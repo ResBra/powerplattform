@@ -53,7 +53,9 @@ export default function ClientHome({ settings: initialSettings }: any) {
 
     const interval = setInterval(() => {
       // @ts-ignore
-      const memInfo = window.performance.memory;
+      const performanceObj = typeof window !== 'undefined' ? window.performance : null;
+      // @ts-ignore
+      const memInfo = performanceObj ? performanceObj.memory : null;
       const memGB = memInfo ? (memInfo.usedJSHeapSize / (1024 * 1024)).toFixed(1) : "0.4";
       const randomLoad = Math.floor(Math.random() * 8) + 8;
       const diff = Math.floor((Date.now() - metrics.start) / 1000);

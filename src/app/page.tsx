@@ -179,13 +179,13 @@ function LoginContent() {
 
       {/* BACKGROUND ELEMENTS */}
       <div className="absolute inset-0 z-0">
-        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-primary/20 blur-[130px] rounded-full animate-pulse"></div>
-        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-blue-500/10 blur-[130px] rounded-full"></div>
+        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-primary/20 blur-[60px] md:blur-[100px] rounded-full"></div>
+        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-blue-500/10 blur-[60px] md:blur-[100px] rounded-full"></div>
       </div>
 
       <motion.div 
         layout
-        className="w-full max-w-[500px] z-10 bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[3rem] shadow-[0_50px_100px_rgba(0,0,0,0.6)] overflow-hidden"
+        className="w-full max-w-[500px] z-10 bg-white/5 backdrop-blur-xl border border-white/10 rounded-[3rem] shadow-[0_50px_100px_rgba(0,0,0,0.6)] overflow-hidden"
       >
         
         {/* HEADER */}
