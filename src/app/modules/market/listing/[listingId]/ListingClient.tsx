@@ -15,7 +15,8 @@ import {
   Zap, 
   Info, 
   Edit, 
-  Trash2 
+  Trash2,
+  ShoppingBag
 } from "lucide-react";
 import { auth, db } from "@/lib/firebase";
 import { doc, getDoc } from "firebase/firestore";
