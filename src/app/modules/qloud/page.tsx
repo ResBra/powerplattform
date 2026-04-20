@@ -169,12 +169,6 @@ export default function QloudPage() {
             
             <div className="flex flex-col sm:flex-row gap-4">
                <button 
-                onClick={() => setIsJoinOpen(true)}
-                className="px-8 py-5 bg-white text-black font-black italic uppercase rounded-2xl tracking-widest text-sm hover:scale-105 transition-all shadow-xl flex items-center gap-3"
-               >
-                  <Search size={20} /> Beitreten
-               </button>
-               <button 
                 onClick={() => { setIsCreateOpen(true); setError(null); }}
                 className="px-8 py-5 bg-primary text-secondary font-black italic uppercase rounded-2xl tracking-widest text-sm hover:scale-105 transition-all shadow-xl shadow-primary/20 flex items-center gap-3"
                >
@@ -287,7 +281,8 @@ export default function QloudPage() {
                          </div>
                       </div>
                       <button onClick={() => setIsJoinOpen(false)} className="p-4 bg-foreground/5 rounded-full text-foreground/40 hover:text-foreground transition-colors"><X size={24} /></button>
-                   </heade                    {isScanning ? (
+                   </header>
+                   {isScanning ? (
                      <div className="space-y-6">
                         <QrScanner onScan={onQrScan} />
                         <p className="text-center text-[10px] font-black uppercase text-foreground/40 italic tracking-[0.2em]">QR-Code in den Rahmen halten</p>
