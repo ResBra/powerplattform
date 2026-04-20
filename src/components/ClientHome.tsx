@@ -131,10 +131,10 @@ export default function ClientHome({ settings: initialSettings }: any) {
           <div className="space-y-6 md:space-y-10">
             <div className="space-y-0 -mt-2">
                <div className="flex flex-col">
-                  <span className="text-[clamp(3.5rem,15.5vw,10rem)] font-black italic uppercase tracking-tighter text-foreground leading-[0.8] drop-shadow-2xl">
+                  <span className="text-[clamp(3rem,8vw,7rem)] font-black italic uppercase tracking-tighter text-foreground leading-[0.85] drop-shadow-xl break-words">
                      Power
                   </span>
-                  <span className="text-[clamp(3.5rem,15.5vw,10rem)] font-black italic uppercase tracking-tighter text-primary leading-[0.8] mt-2 drop-shadow-2xl">
+                  <span className="text-[clamp(3rem,8vw,7rem)] font-black italic uppercase tracking-tighter text-primary leading-[0.85] mt-2 drop-shadow-xl break-words">
                      Plattform.
                   </span>
                </div>
@@ -163,9 +163,9 @@ export default function ClientHome({ settings: initialSettings }: any) {
             </div>
           </div>
 
-          <div className="relative w-full">
-             <div className="absolute inset-0 bg-primary/10 blur-[80px] md:blur-[100px] rounded-full"></div>
-             <div className="relative bg-black/40 backdrop-blur-3xl border border-white/10 rounded-[2.5rem] md:rounded-[3rem] p-6 md:p-12 space-y-6 md:space-y-8 shadow-2xl">
+          <div className="relative w-full lg:max-w-md ml-auto">
+             <div className="absolute inset-0 bg-primary/10 blur-[40px] md:blur-[60px] rounded-full"></div>
+             <div className="relative bg-black/40 backdrop-blur-md border border-white/10 rounded-[2.5rem] md:rounded-[3rem] p-6 md:p-10 space-y-6 md:space-y-8 shadow-2xl">
                 <div className="flex items-center gap-4 border-b border-white/5 pb-4 md:pb-6">
                    <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-primary flex items-center justify-center text-secondary shadow-lg shadow-primary/20">
                       <Layers size={24} />
