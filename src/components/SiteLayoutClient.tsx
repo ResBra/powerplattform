@@ -54,11 +54,13 @@ export default function SiteLayoutClient({ children, activePage, settings }: Sit
     // 1. AUTH OBSERVER (Universal for Web & Mobile)
     const unsubscribe = auth.onAuthStateChanged((u: any) => {
       setUser(u);
-      setIsAuthenticating(false);
-      
       // If we are on a protected page (not the login page /) and no user is found:
       if (!u && window.location.pathname !== "/") {
         router.push("/");
+        // Do NOT set isAuthenticating to false here, keep the loading screen alive 
+        // to prevent rendering the heavy dashboard before the redirect kicks in.
+      } else {
+        setIsAuthenticating(false);
       }
     });
 
