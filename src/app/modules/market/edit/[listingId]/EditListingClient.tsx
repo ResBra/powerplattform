@@ -66,7 +66,7 @@ export default function EditListingClient() {
           imageUrls: urls
         });
         
-        const previews = [null, null, null];
+        const previews: (string | null)[] = [null, null, null];
         urls.forEach((url: string, i: number) => {
           if (i < 3) previews[i] = url;
         });
