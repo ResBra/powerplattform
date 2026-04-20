@@ -219,13 +219,18 @@ export default function CreateListing() {
                            <label className="flex items-center gap-2 text-[10px] font-black uppercase text-foreground/30 italic group-focus-within:text-primary transition-colors">
                               <Layers size={12} /> Kategorie
                            </label>
-                           <select 
-                             value={formData.category}
-                             onChange={(e) => setFormData({...formData, category: e.target.value})}
-                             className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 px-6 text-sm font-black italic uppercase tracking-widest outline-none focus:border-primary/50 transition-all text-foreground appearance-none"
-                           >
-                             {CATEGORIES.map(c => <option key={c} value={c} className="bg-[#050a10]">{c}</option>)}
-                           </select>
+                           <div className="relative">
+                              <select 
+                                value={formData.category}
+                                onChange={(e) => setFormData({...formData, category: e.target.value})}
+                                className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 px-6 text-sm font-black italic uppercase tracking-widest outline-none focus:border-primary/50 transition-all text-foreground appearance-none cursor-pointer"
+                              >
+                                {CATEGORIES.map(c => <option key={c} value={c} className="bg-[#050a10] text-foreground">{c}</option>)}
+                              </select>
+                              <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-foreground/20 group-focus-within:text-primary transition-colors">
+                                 <Plus className="rotate-45" size={18} />
+                              </div>
+                           </div>
                         </div>
                         <div className="space-y-2 group">
                            <label className="flex items-center gap-2 text-[10px] font-black uppercase text-foreground/30 italic group-focus-within:text-primary transition-colors">

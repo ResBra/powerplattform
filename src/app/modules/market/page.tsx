@@ -164,7 +164,7 @@ export default function MarketHub() {
                       onClick={() => router.push(`/modules/market/listing/${item.id}`)}
                       className="group relative cursor-pointer"
                     >
-                      <div className="aspect-[4/5] bg-card border border-white/5 rounded-[2.5rem] overflow-hidden shadow-xl transition-all group-hover:shadow-primary/10 group-hover:border-primary/20 group-hover:-translate-y-2">
+                      <div className="flex flex-col min-h-[480px] bg-card border border-white/5 rounded-[2.5rem] overflow-hidden shadow-xl transition-all group-hover:shadow-primary/10 group-hover:border-primary/20 group-hover:-translate-y-2">
                          {/* IMAGE */}
                          <div className="w-full h-[65%] relative overflow-hidden">
                             <img 
@@ -178,8 +178,8 @@ export default function MarketHub() {
                          </div>
                          
                          {/* CONTENT */}
-                         <div className="p-8 space-y-6">
-                            <div className="space-y-2">
+                         <div className="p-6 md:p-8 flex-1 flex flex-col justify-between">
+                            <div className="space-y-4">
                                <div className="flex items-center gap-2 text-primary opacity-60">
                                   <MapPin size={12} />
                                   <span className="text-[10px] font-black uppercase italic tracking-widest">{item.city}</span>
@@ -189,7 +189,7 @@ export default function MarketHub() {
                                 </h3>
                             </div>
                             
-                            <div className="flex items-center justify-between">
+                            <div className="flex items-center justify-between pt-6 border-t border-white/5 mt-auto">
                                <div className="text-2xl font-black italic uppercase text-foreground leading-none">
                                   {item.price}<span className="text-primary/40 ml-1">€</span>
                                </div>
@@ -205,7 +205,7 @@ export default function MarketHub() {
                                      sellerId: item.sellerId
                                    });
                                  }}
-                                 className="p-4 bg-primary text-secondary rounded-2xl hover:scale-110 active:scale-95 transition-all shadow-lg shadow-primary/20"
+                                 className="w-12 h-12 bg-primary text-secondary rounded-2xl hover:scale-110 active:scale-95 transition-all shadow-lg shadow-primary/20 flex items-center justify-center p-0"
                                >
                                   <Plus size={20} />
                                </button>
