@@ -21,6 +21,7 @@ import {
   Sparkles
 } from "lucide-react";
 import { getListingsAction } from "./actions";
+import { useCart } from "./CartContext";
 
 const CATEGORIES = [
   "All",
@@ -39,6 +40,7 @@ export default function MarketHub() {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [citySearch, setCitySearch] = useState("");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const { cart, addToCart, totalItems, totalPrice } = useCart();
 
   useEffect(() => {
     loadListings();
@@ -69,7 +71,7 @@ export default function MarketHub() {
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
                    <div className="px-4 py-1.5 bg-primary/10 border border-primary/20 rounded-full">
-                      <span className="text-[10px] font-black uppercase text-primary italic tracking-[0.2em]">Live Marketplace</span>
+                      <span className="text-[10px] font-black uppercase text-primary italic tracking-[0.2em]">Live Little Market</span>
                    </div>
                    <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
                 </div>
@@ -81,23 +83,41 @@ export default function MarketHub() {
                 </p>
               </div>
 
-              {/* SEARCH & FILTERS */}
-              <div className="flex flex-col md:flex-row gap-4">
+              {/* SEARCH, FILTERS & CART INDICATOR */}
+              <div className="flex flex-col md:flex-row gap-6">
                 <div className="flex-1 relative group">
                   <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-foreground/20 group-focus-within:text-primary transition-colors" size={20} />
                   <input 
                     type="text" 
-                    placeholder="NACH STADT FILTERN..."
+                    placeholder="PRODUKTE FINDEN..."
                     value={citySearch}
                     onChange={(e) => setCitySearch(e.target.value)}
                     className="w-full bg-white/5 border border-white/10 rounded-2xl py-6 pl-16 pr-8 text-xs font-black italic uppercase tracking-widest outline-none focus:border-primary/50 transition-all text-foreground"
                   />
                 </div>
+                
+                {totalItems > 0 && (
+                  <button 
+                    onClick={() => router.push("/modules/market/checkout")}
+                    className="bg-white/5 border border-primary/20 p-6 rounded-2xl flex items-center gap-6 group hover:bg-primary/5 transition-all"
+                  >
+                     <div className="relative">
+                        <ShoppingBag className="text-primary" size={24} />
+                        <span className="absolute -top-2 -right-2 w-5 h-5 bg-primary text-secondary text-[8px] font-black rounded-full flex items-center justify-center">{totalItems}</span>
+                     </div>
+                     <div className="text-left hidden sm:block">
+                        <p className="text-[8px] font-black uppercase text-foreground/30 italic">Warenkorb</p>
+                        <p className="text-sm font-black italic uppercase text-foreground">{totalPrice.toFixed(2)} €</p>
+                     </div>
+                     <ArrowRight size={20} className="text-primary group-hover:translate-x-2 transition-transform" />
+                  </button>
+                )}
+
                 <button 
                   onClick={() => router.push("/modules/market/create")}
-                  className="bg-primary text-secondary px-10 py-6 rounded-2xl font-black italic uppercase tracking-widest text-xs flex items-center justify-center gap-4 hover:scale-105 transition-all shadow-xl shadow-primary/20"
+                  className="bg-primary text-secondary px-8 py-6 rounded-2xl font-black italic uppercase tracking-widest text-xs flex items-center justify-center gap-4 hover:scale-105 transition-all shadow-xl shadow-primary/20"
                 >
-                  <Plus size={20} /> Produkt Anbieten
+                  <Plus size={20} /> Anbieten
                 </button>
               </div>
             </div>
@@ -148,7 +168,7 @@ export default function MarketHub() {
                          {/* IMAGE */}
                          <div className="w-full h-[65%] relative overflow-hidden">
                             <img 
-                              src={item.imageUrl} 
+                              src={item.imageUrls?.[0] || item.imageUrl} 
                               alt={item.title}
                               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                             />
@@ -166,16 +186,29 @@ export default function MarketHub() {
                                </div>
                                <h3 className="text-xl font-black italic uppercase text-foreground leading-none group-hover:text-primary transition-colors truncate">
                                   {item.title}
-                               </h3>
+                                </h3>
                             </div>
                             
-                            <div className="flex items-baseline justify-between">
+                            <div className="flex items-center justify-between">
                                <div className="text-2xl font-black italic uppercase text-foreground leading-none">
                                   {item.price}<span className="text-primary/40 ml-1">€</span>
                                </div>
-                               <div className="p-3 bg-foreground/5 rounded-xl text-foreground/20 group-hover:text-primary transition-colors">
-                                  <ArrowRight size={18} />
-                               </div>
+                               <button 
+                                 onClick={(e) => {
+                                   e.stopPropagation();
+                                   addToCart({
+                                     id: item.id,
+                                     title: item.title,
+                                     price: item.price,
+                                     imageUrl: item.imageUrls?.[0] || item.imageUrl,
+                                     quantity: 1,
+                                     sellerId: item.sellerId
+                                   });
+                                 }}
+                                 className="p-4 bg-primary text-secondary rounded-2xl hover:scale-110 active:scale-95 transition-all shadow-lg shadow-primary/20"
+                               >
+                                  <Plus size={20} />
+                               </button>
                             </div>
                          </div>
                       </div>

@@ -35,8 +35,8 @@ const CATEGORIES = [
 export default function CreateListing() {
   const router = useRouter();
   const [isPending, setIsPending] = useState(false);
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageFiles, setImageFiles] = useState<(File | null)[]>([null, null, null]);
+  const [imagePreviews, setImagePreviews] = useState<(string | null)[]>([null, null, null]);
   
   const [formData, setFormData] = useState({
     title: "",
@@ -46,29 +46,48 @@ export default function CreateListing() {
     category: "Elektronik"
   });
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setImageFile(file);
+      const newFiles = [...imageFiles];
+      newFiles[index] = file;
+      setImageFiles(newFiles);
+
       const reader = new FileReader();
       reader.onloadend = () => {
-        setImagePreview(reader.result as string);
+        const newPreviews = [...imagePreviews];
+        newPreviews[index] = reader.result as string;
+        setImagePreviews(newPreviews);
       };
       reader.readAsDataURL(file);
     }
   };
 
+  const removeImage = (index: number) => {
+    const newFiles = [...imageFiles];
+    newFiles[index] = null;
+    setImageFiles(newFiles);
+
+    const newPreviews = [...imagePreviews];
+    newPreviews[index] = null;
+    setImagePreviews(newPreviews);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!auth.currentUser || !imageFile) {
-        alert("Bitte wähle ein Bild aus.");
+    if (!auth.currentUser || imageFiles.every(f => !f)) {
+        alert("Bitte lade mindestens ein Bild hoch.");
         return;
     }
     
     setIsPending(true);
     try {
-      // 1. Upload to Firebase Storage
-      const imageUrl = await uploadImage(imageFile, "market_listings");
+      // 1. Upload all non-null files to Firebase Storage
+      const uploadPromises = imageFiles
+        .filter((file): file is File => file !== null)
+        .map(file => uploadImage(file, "market_listings"));
+      
+      const imageUrls = await Promise.all(uploadPromises);
 
       // 2. Create Listing in Firestore
       const result = await createListingAction({
@@ -77,7 +96,7 @@ export default function CreateListing() {
         price: parseFloat(formData.price),
         city: formData.city,
         category: formData.category,
-        imageUrl: imageUrl,
+        imageUrls: imageUrls,
         sellerId: auth.currentUser.uid,
         sellerName: auth.currentUser.displayName || auth.currentUser.email || "Unbekannter Verkäufer"
       });
@@ -118,34 +137,58 @@ export default function CreateListing() {
 
           <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-12 gap-10">
             
-            {/* LEFT: MEDIA UPLOAD */}
+            {/* LEFT: MEDIA UPLOAD (E-COMMERCE STYLE) */}
             <div className="lg:col-span-5 space-y-6">
                <div className="bg-card border border-white/5 rounded-[2.5rem] p-8 shadow-2xl relative overflow-hidden h-full">
                   <div className="absolute top-0 right-0 p-10 opacity-5 pointer-events-none">
                      <Sparkles size={200} />
                   </div>
                   
-                  <div className="relative space-y-8 h-full flex flex-col justify-between">
+                  <div className="relative space-y-8">
                      <div className="space-y-2">
-                        <h3 className="text-xl font-black italic uppercase text-foreground">Produktbild</h3>
-                        <p className="text-[10px] font-black uppercase text-foreground/30 italic">Lade ein hochwertiges Foto hoch</p>
+                        <h3 className="text-xl font-black italic uppercase text-foreground">Produktbilder</h3>
+                        <p className="text-[10px] font-black uppercase text-foreground/30 italic">Lade bis zu 3 hochauflösende Fotos hoch</p>
                      </div>
 
-                     <label className="relative flex-1 group cursor-pointer">
-                        <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
-                        <div className="w-full h-full min-h-[300px] border-2 border-dashed border-white/5 rounded-[2rem] flex flex-col items-center justify-center p-8 transition-all group-hover:border-primary/40 group-hover:bg-primary/5 relative overflow-hidden">
-                           {imagePreview ? (
-                              <img src={imagePreview} className="absolute inset-0 w-full h-full object-cover transition-transform group-hover:scale-105" />
-                           ) : (
-                              <div className="text-center space-y-4">
-                                 <div className="p-6 bg-foreground/5 rounded-3xl text-foreground/20 group-hover:text-primary transition-colors inline-block">
-                                    <Upload size={32} />
+                     <div className="space-y-4">
+                        {/* MAIN IMAGE SLOT */}
+                        <label className="relative block h-[300px] group cursor-pointer group">
+                           <input type="file" accept="image/*" onChange={(e) => handleImageChange(0, e)} className="hidden" />
+                           <div className="w-full h-full border-2 border-dashed border-white/5 rounded-[2rem] flex flex-col items-center justify-center p-8 transition-all group-hover:border-primary/40 group-hover:bg-primary/5 relative overflow-hidden">
+                              {imagePreviews[0] ? (
+                                 <>
+                                    <img src={imagePreviews[0]} className="absolute inset-0 w-full h-full object-cover transition-transform group-hover:scale-105" />
+                                    <button onClick={(e) => { e.preventDefault(); removeImage(0); }} className="absolute top-4 right-4 p-2 bg-red-500 text-white rounded-xl opacity-0 group-hover:opacity-100 transition-opacity">✕</button>
+                                 </>
+                              ) : (
+                                 <div className="text-center space-y-4">
+                                    <div className="p-6 bg-foreground/5 rounded-3xl text-foreground/20 group-hover:text-primary transition-colors inline-block text-xs font-black">HAUPTBILD</div>
                                  </div>
-                                 <p className="text-[10px] font-black uppercase text-foreground/20 italic tracking-widest">Klicken zum Auswählen</p>
-                              </div>
-                           )}
+                              )}
+                           </div>
+                        </label>
+
+                        {/* SECONDARY SLOTS */}
+                        <div className="grid grid-cols-2 gap-4">
+                           {[1, 2].map(idx => (
+                              <label key={idx} className="relative block aspect-square group cursor-pointer">
+                                 <input type="file" accept="image/*" onChange={(e) => handleImageChange(idx, e)} className="hidden" />
+                                 <div className="w-full h-full border-2 border-dashed border-white/5 rounded-[1.5rem] flex flex-col items-center justify-center p-4 transition-all group-hover:border-primary/40 group-hover:bg-primary/5 relative overflow-hidden">
+                                    {imagePreviews[idx] ? (
+                                       <>
+                                          <img src={imagePreviews[idx]} className="absolute inset-0 w-full h-full object-cover" />
+                                          <button onClick={(e) => { e.preventDefault(); removeImage(idx); }} className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity text-[8px]">✕</button>
+                                       </>
+                                    ) : (
+                                       <div className="text-center">
+                                          <div className="p-4 bg-foreground/5 rounded-2xl text-foreground/20 group-hover:text-primary transition-colors inline-block text-[8px] font-black">BILD {idx + 1}</div>
+                                       </div>
+                                    )}
+                                 </div>
+                              </label>
+                           ))}
                         </div>
-                     </label>
+                     </div>
                   </div>
                </div>
             </div>

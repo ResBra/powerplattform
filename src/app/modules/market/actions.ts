@@ -24,7 +24,7 @@ export interface MarketListing {
   price: number;
   city: string;
   category: string;
-  imageUrl: string;
+  imageUrls: string[]; // Changed from single imageUrl
   sellerId: string;
   sellerName: string;
   createdAt?: any;

@@ -20,6 +20,7 @@ import {
 import { auth, db } from "@/lib/firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { getOrCreateChatAction, deleteListingAction } from "../../actions";
+import { useCart } from "../../CartContext";
 
 export default function ListingClient() {
   const { listingId } = useParams();
@@ -28,6 +29,8 @@ export default function ListingClient() {
   const [loading, setLoading] = useState(true);
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [activeImage, setActiveImage] = useState(0);
+  const { addToCart } = useCart();
 
   useEffect(() => {
     async function loadListing() {
@@ -58,7 +61,7 @@ export default function ListingClient() {
       auth.currentUser.uid,
       listing.sellerId,
       listing.title,
-      listing.imageUrl
+      listing.imageUrls?.[0] || listing.imageUrl
     );
 
     if (result.success) {
@@ -108,14 +111,32 @@ export default function ListingClient() {
           </button>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-            <div className="lg:col-span-7">
-               <motion.div 
-                 initial={{ opacity: 0, scale: 0.95 }}
-                 animate={{ opacity: 1, scale: 1 }}
-                 className="bg-card border border-white/5 rounded-[3rem] md:rounded-[4rem] overflow-hidden shadow-2xl"
-               >
-                  <img src={listing.imageUrl} className="w-full aspect-square object-cover" />
-               </motion.div>
+            <div className="lg:col-span-7 space-y-6">
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="bg-card border border-white/5 rounded-[3rem] md:rounded-[4rem] overflow-hidden shadow-2xl relative aspect-square"
+                >
+                   <img 
+                     src={listing.imageUrls?.[activeImage] || listing.imageUrl} 
+                     className="w-full h-full object-cover transition-all duration-500" 
+                   />
+                </motion.div>
+
+                {/* THUMBNAILS */}
+                {listing.imageUrls && listing.imageUrls.length > 1 && (
+                  <div className="flex gap-4 px-2">
+                    {listing.imageUrls.map((url: string, idx: number) => (
+                      <button 
+                        key={idx}
+                        onClick={() => setActiveImage(idx)}
+                        className={`w-20 h-20 rounded-2xl overflow-hidden border-2 transition-all ${activeImage === idx ? 'border-primary scale-110 shadow-lg shadow-primary/20' : 'border-white/5 opacity-40 hover:opacity-100'}`}
+                      >
+                        <img src={url} className="w-full h-full object-cover" />
+                      </button>
+                    ))}
+                  </div>
+                )}
             </div>
 
             <div className="lg:col-span-5 space-y-8">
@@ -172,19 +193,38 @@ export default function ListingClient() {
                             </button>
                          </div>
                        ) : (
-                         <button 
-                           onClick={handleContactSeller}
-                           disabled={isRedirecting}
-                           className="w-full bg-primary text-secondary font-black italic uppercase tracking-widest py-8 rounded-[2rem] shadow-2xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-4 disabled:opacity-50"
-                         >
-                           {isRedirecting ? (
-                              <div className="w-6 h-6 border-2 border-secondary/20 border-t-secondary rounded-full animate-spin"></div>
-                           ) : (
-                              <>
-                                <MessageCircle size={20} /> Verkäufer Kontaktieren
-                              </>
-                           )}
-                         </button>
+                         <div className="space-y-4">
+                            <button 
+                              onClick={() => {
+                                addToCart({
+                                  id: listing.id,
+                                  title: listing.title,
+                                  price: listing.price,
+                                  imageUrl: listing.imageUrls?.[0] || listing.imageUrl,
+                                  quantity: 1,
+                                  sellerId: listing.sellerId
+                                });
+                                router.push("/modules/market");
+                              }}
+                              className="w-full bg-primary text-secondary font-black italic uppercase tracking-widest py-8 rounded-[2rem] shadow-2xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-4"
+                            >
+                               <ShoppingBag size={20} /> In den Warenkorb
+                            </button>
+                            
+                            <button 
+                              onClick={handleContactSeller}
+                              disabled={isRedirecting}
+                              className="w-full bg-foreground/5 text-foreground/40 font-black italic uppercase tracking-widest py-6 rounded-[2rem] border border-white/5 hover:bg-foreground/10 transition-all flex items-center justify-center gap-4 disabled:opacity-50"
+                            >
+                              {isRedirecting ? (
+                                 <div className="w-6 h-6 border-2 border-primary/20 border-t-primary rounded-full animate-spin"></div>
+                              ) : (
+                                 <>
+                                   <MessageCircle size={18} /> Verkäufer Chat
+                                 </>
+                              )}
+                            </button>
+                         </div>
                        )}
                     </div>
 

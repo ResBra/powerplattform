@@ -68,7 +68,7 @@ export default function MarketInbox() {
                  <h1 className="text-3xl md:text-5xl font-black italic uppercase tracking-tighter text-foreground">
                     Mein <span className="text-primary">Postfach.</span>
                  </h1>
-                 <p className="text-[10px] md:text-xs font-black uppercase text-primary italic tracking-widest mt-1">Marketplace Communication Hub</p>
+                 <p className="text-[10px] md:text-xs font-black uppercase text-primary italic tracking-widest mt-1">Little Market Communication Hub</p>
               </div>
             </div>
           </header>
