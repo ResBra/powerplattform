@@ -62,7 +62,10 @@ export default function SiteLayoutClient({ children, activePage, settings }: Sit
       return;
     }
 
+    let resolved = false;
+
     const unsubscribe = auth.onAuthStateChanged((u: any) => {
+      resolved = true;
       setUser(u);
       // If we are on a protected page (not the login page /) and no user is found:
       if (!u && window.location.pathname !== "/") {
@@ -74,6 +77,20 @@ export default function SiteLayoutClient({ children, activePage, settings }: Sit
         setIsAuthenticating(false);
       }
     });
+
+    // 1.5 FAILSAFE TIMEOUT
+    // iOS Safari WebViews sometimes silently hang the IDB promise in Firebase Auth.
+    // If auth state hasn't resolved in 3 seconds, break the deadlock and assume logged out!
+    const deadlockTimer = setTimeout(() => {
+      if (!resolved) {
+         console.warn("Firebase Auth deadlock strictly caught. Escaping to login.");
+         setIsAuthenticating(false);
+         if (window.location.pathname !== "/") {
+            const callbackUrl = encodeURIComponent(window.location.pathname);
+            window.location.href = `/?callbackUrl=${callbackUrl}`;
+         }
+      }
+    }, 2500);
 
     // 2. PREFERENCES LOAD
     const savedTheme = localStorage.getItem("theme") as "dark" | "light" || "dark";
@@ -90,7 +107,10 @@ export default function SiteLayoutClient({ children, activePage, settings }: Sit
 
     applyTheme(savedTheme, savedP1, savedP2, savedBg, savedBgOp);
 
-    return () => unsubscribe();
+    return () => {
+       unsubscribe();
+       clearTimeout(deadlockTimer);
+    };
   }, [router]);
 
   const applyTheme = (t: string, p1: string, p2: string, bg: string, op: string) => {
