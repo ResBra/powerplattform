@@ -52,6 +52,13 @@ export default function SiteLayoutClient({ children, activePage, settings }: Sit
     setMounted(true);
     
     // 1. AUTH OBSERVER (Universal for Web & Mobile)
+    if (!auth) {
+      console.warn("Auth module missing. Escaping auth check.");
+      setIsAuthenticating(false);
+      if (window.location.pathname !== "/") router.push("/");
+      return;
+    }
+
     const unsubscribe = auth.onAuthStateChanged((u: any) => {
       setUser(u);
       // If we are on a protected page (not the login page /) and no user is found:

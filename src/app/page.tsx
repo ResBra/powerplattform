@@ -58,8 +58,15 @@ function LoginContent() {
       // Cleanup recaptcha if any
       const existing = document.getElementById("recaptcha-container");
       if (existing) existing.innerHTML = "";
+      
+      const unsubscribe = auth.onAuthStateChanged((u: any) => {
+         if (u && !isPending && window.location.pathname === "/") {
+            redirectToDestination();
+         }
+      });
+      return () => unsubscribe();
     }
-  }, []);
+  }, [router, callbackUrl, isPending]);
 
   // RECAPTCHA INITIALIZATION
   const setupRecaptcha = (containerId: string) => {
