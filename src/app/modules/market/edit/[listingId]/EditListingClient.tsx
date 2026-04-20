@@ -42,11 +42,11 @@ export default function EditListingClient() {
     price: "",
     city: "",
     category: "Elektronik",
-    imageUrl: ""
+    imageUrls: [] as string[]
   });
 
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageFiles, setImageFiles] = useState<(File | null)[]>([null, null, null]);
+  const [imagePreviews, setImagePreviews] = useState<(string | null)[]>([null, null, null]);
 
   useEffect(() => {
     async function loadListing() {
@@ -56,15 +56,21 @@ export default function EditListingClient() {
       
       if (snap.exists()) {
         const data = snap.data();
+        const urls = data.imageUrls || (data.imageUrl ? [data.imageUrl] : []);
         setFormData({
           title: data.title,
           description: data.description,
           price: data.price.toString(),
           city: data.city,
           category: data.category,
-          imageUrl: data.imageUrl || ""
+          imageUrls: urls
         });
-        setImagePreview(data.imageUrl || null);
+        
+        const previews = [null, null, null];
+        urls.forEach((url: string, i: number) => {
+          if (i < 3) previews[i] = url;
+        });
+        setImagePreviews(previews);
         setLoading(false);
       } else {
         router.push("/modules/market");
@@ -73,15 +79,37 @@ export default function EditListingClient() {
     loadListing();
   }, [listingId, router]);
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setImageFile(file);
+      const newFiles = [...imageFiles];
+      newFiles[index] = file;
+      setImageFiles(newFiles);
+
       const reader = new FileReader();
       reader.onloadend = () => {
-        setImagePreview(reader.result as string);
+        const newPreviews = [...imagePreviews];
+        newPreviews[index] = reader.result as string;
+        setImagePreviews(newPreviews);
       };
       reader.readAsDataURL(file);
+    }
+  };
+
+  const removeImage = (index: number) => {
+    const newFiles = [...imageFiles];
+    newFiles[index] = null;
+    setImageFiles(newFiles);
+
+    const newPreviews = [...imagePreviews];
+    newPreviews[index] = null;
+    setImagePreviews(newPreviews);
+    
+    // Also remove from existing URLs if it was an existing one
+    const newUrls = [...formData.imageUrls];
+    if (index < newUrls.length) {
+       newUrls.splice(index, 1);
+       setFormData(prev => ({ ...prev, imageUrls: newUrls }));
     }
   };
 
@@ -91,10 +119,21 @@ export default function EditListingClient() {
     
     setIsPending(true);
     try {
-      let finalImageUrl = formData.imageUrl;
-
-      if (imageFile) {
-        finalImageUrl = await uploadImage(imageFile, "market_listings");
+      // 1. Determine which images to keep and which to upload
+      const finalImageUrls: string[] = [];
+      
+      for (let i = 0; i < 3; i++) {
+        const file = imageFiles[i];
+        const preview = imagePreviews[i];
+        
+        if (file) {
+          // New upload
+          const url = await uploadImage(file, "market_listings");
+          finalImageUrls.push(url);
+        } else if (preview && preview.startsWith("http")) {
+          // Existing image
+          finalImageUrls.push(preview);
+        }
       }
 
       const result = await updateListingAction(listingId as string, auth.currentUser.uid, {
@@ -103,7 +142,7 @@ export default function EditListingClient() {
         price: parseFloat(formData.price),
         city: formData.city,
         category: formData.category,
-        imageUrl: finalImageUrl
+        imageUrls: finalImageUrls
       });
 
       if (result.success) {
@@ -149,20 +188,36 @@ export default function EditListingClient() {
           <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-12 gap-10">
             <div className="lg:col-span-5">
                <div className="bg-card border border-white/5 rounded-[2.5rem] p-8 shadow-2xl h-full flex flex-col gap-6">
-                  <h3 className="text-xl font-black italic uppercase text-foreground">Produktbild</h3>
-                  <label className="relative flex-1 group cursor-pointer overflow-hidden rounded-[2rem] border-2 border-white/5 border-dashed hover:border-primary/40 transition-all">
-                     <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
-                     {imagePreview ? (
-                        <img src={imagePreview} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform" />
-                     ) : (
-                        <div className="absolute inset-0 flex flex-col items-center justify-center text-foreground/20">
-                           <Upload size={32} />
+                  <h3 className="text-xl font-black italic uppercase text-foreground">Produktbilder</h3>
+                  
+                  <div className="space-y-4">
+                     {/* MAPPING OVER 3 SLOTS */}
+                     {[0, 1, 2].map(idx => (
+                        <div key={idx} className="relative group">
+                           <label className={`relative block rounded-[2rem] border-2 border-white/5 border-dashed hover:border-primary/40 transition-all cursor-pointer overflow-hidden ${idx === 0 ? 'h-[250px]' : 'h-[100px]'}`}>
+                              <input type="file" accept="image/*" onChange={(e) => handleImageChange(idx, e)} className="hidden" />
+                              {imagePreviews[idx] ? (
+                                 <img src={imagePreviews[idx]!} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                              ) : (
+                                 <div className="absolute inset-0 flex flex-col items-center justify-center text-foreground/10 text-[8px] font-black uppercase italic">
+                                    {idx === 0 ? "Hauptbild" : `Bild ${idx + 1}`}
+                                    <Upload size={idx === 0 ? 32 : 16} className="mt-2" />
+                                 </div>
+                              )}
+                              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                                 <Upload size={idx === 0 ? 32 : 20} className="text-white" />
+                              </div>
+                           </label>
+                           {imagePreviews[idx] && (
+                              <button 
+                                type="button"
+                                onClick={() => removeImage(idx)} 
+                                className="absolute top-4 right-4 p-2 bg-red-500 text-white rounded-xl opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                              >✕</button>
+                           )}
                         </div>
-                     )}
-                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                        <Upload size={32} className="text-white" />
-                     </div>
-                  </label>
+                     ))}
+                  </div>
                </div>
             </div>
 
