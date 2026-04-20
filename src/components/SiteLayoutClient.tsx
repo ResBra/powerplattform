@@ -55,7 +55,10 @@ export default function SiteLayoutClient({ children, activePage, settings }: Sit
     if (!auth) {
       console.warn("Auth module missing. Escaping auth check.");
       setIsAuthenticating(false);
-      if (window.location.pathname !== "/") router.push("/");
+      if (window.location.pathname !== "/") {
+        const callbackUrl = encodeURIComponent(window.location.pathname);
+        router.push(`/?callbackUrl=${callbackUrl}`);
+      }
       return;
     }
 
@@ -63,7 +66,8 @@ export default function SiteLayoutClient({ children, activePage, settings }: Sit
       setUser(u);
       // If we are on a protected page (not the login page /) and no user is found:
       if (!u && window.location.pathname !== "/") {
-        router.push("/");
+        const callbackUrl = encodeURIComponent(window.location.pathname);
+        router.push(`/?callbackUrl=${callbackUrl}`);
         // Do NOT set isAuthenticating to false here, keep the loading screen alive 
         // to prevent rendering the heavy dashboard before the redirect kicks in.
       } else {

@@ -184,6 +184,55 @@ export default function QloudPage() {
           </motion.div>
         </header>
 
+        {/* INLINE SEARCH BAR */}
+        <section className="relative z-20">
+           <div className="bg-foreground/5 p-4 rounded-3xl border border-border flex items-center gap-4 backdrop-blur-xl">
+              <div className="relative flex-1">
+                 <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-foreground/40" size={20} />
+                 <input 
+                    type="text" 
+                    placeholder="QLOUD BEITRETEN (NAME, ID SUCHEN)..." 
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full bg-card border-none rounded-2xl py-6 pl-14 pr-6 font-black italic uppercase text-sm outline-none focus:ring-2 focus:ring-primary transition-all text-foreground placeholder:text-foreground/20 shadow-inner"
+                 />
+              </div>
+              <button onClick={() => setIsJoinOpen(true)} className="p-6 bg-card rounded-2xl hover:bg-primary/10 hover:text-primary transition-all group flex-shrink-0 shadow-sm">
+                 <Scan size={24} className="text-foreground/40 group-hover:text-primary transition-colors" />
+              </button>
+           </div>
+
+           {/* INLINE SEARCH RESULTS */}
+           <AnimatePresence>
+             {searchQuery.length >= 2 && (
+               <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="absolute top-full left-0 w-full mt-4 bg-card border border-border rounded-3xl shadow-2xl p-6 flex flex-col gap-4 max-h-[400px] overflow-y-auto">
+                  {isSearching ? (
+                     <div className="py-6 text-center animate-pulse italic font-black text-foreground/20 uppercase text-xs tracking-widest">Scanne Verzeichnis...</div>
+                  ) : searchResults.length > 0 ? (
+                     searchResults.map((g) => (
+                       <div key={g.id} className="p-5 bg-foreground/5 border border-border rounded-[1.5rem] flex items-center justify-between group hover:border-primary transition-all">
+                          <div className="flex items-center gap-4">
+                             <div className="p-3 bg-card rounded-xl text-primary shadow-sm"><Users size={18} /></div>
+                             <div>
+                                <h4 className="font-black italic uppercase text-foreground leading-none">{g.name}</h4>
+                                <p className="text-[10px] font-black uppercase text-foreground/40 italic tracking-widest mt-1">{g.memberCount} Nodes aktiv</p>
+                             </div>
+                          </div>
+                          {joinStatus === g.id ? (
+                            <div className="px-5 py-3 bg-green-500 text-white rounded-xl text-[10px] font-black italic uppercase flex items-center gap-2"><CheckCircle2 size={14} /> Angefragt</div>
+                          ) : (
+                            <button onClick={() => handleRequestJoin(g.id)} className="px-5 py-3 bg-primary text-secondary rounded-xl text-[10px] font-black italic uppercase transition-all flex items-center gap-2 shadow-lg shadow-primary/20">Beitreten <ArrowRight size={14} /></button>
+                          )}
+                       </div>
+                     ))
+                  ) : (
+                     <div className="py-6 text-center font-black text-foreground/20 uppercase text-xs italic tracking-widest">Keine Gruppe gefunden.</div>
+                  )}
+               </motion.div>
+             )}
+           </AnimatePresence>
+        </section>
+
         {/* YOUR GROUPS GRID */}
         <section className="space-y-8">
            <div className="flex items-center justify-between border-b border-white/5 pb-4">
@@ -238,51 +287,13 @@ export default function QloudPage() {
                          </div>
                       </div>
                       <button onClick={() => setIsJoinOpen(false)} className="p-4 bg-foreground/5 rounded-full text-foreground/40 hover:text-foreground transition-colors"><X size={24} /></button>
-                   </header>
-
-                   {isScanning ? (
+                   </heade                    {isScanning ? (
                      <div className="space-y-6">
                         <QrScanner onScan={onQrScan} />
                         <p className="text-center text-[10px] font-black uppercase text-foreground/40 italic tracking-[0.2em]">QR-Code in den Rahmen halten</p>
                      </div>
                    ) : (
-                     <div className="space-y-8">
-                        <div className="relative">
-                           <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-foreground/20" size={20} />
-                           <input 
-                              type="text" 
-                              placeholder="GRUPPENNAME SUCHEN..." 
-                              value={searchQuery}
-                              onChange={(e) => setSearchQuery(e.target.value)}
-                              className="w-full bg-foreground/5 border-2 border-border rounded-2xl py-6 pl-14 pr-6 font-black italic uppercase text-sm outline-none focus:border-primary transition-all text-foreground placeholder:text-foreground/20"
-                           />
-                        </div>
-
-                        <div className="space-y-4">
-                           {isSearching ? (
-                             <div className="py-10 text-center animate-pulse italic font-black text-foreground/10 uppercase text-xs tracking-[0.3em]">Scanne Verzeichnis...</div>
-                           ) : searchResults.length > 0 ? (
-                             searchResults.map((g) => (
-                               <div key={g.id} className="p-6 bg-foreground/5 border border-border rounded-[2rem] flex items-center justify-between group hover:border-primary transition-all shadow-sm">
-                                  <div className="flex items-center gap-4">
-                                     <div className="p-3 bg-card rounded-xl text-primary shadow-sm border border-border"><Users size={18} /></div>
-                                     <div>
-                                        <h4 className="font-black italic uppercase text-foreground leading-none">{g.name}</h4>
-                                        <p className="text-[9px] font-black uppercase text-foreground/40 italic tracking-widest mt-1">{g.memberCount} Nodes aktiv</p>
-                                     </div>
-                                  </div>
-                                  {joinStatus === g.id ? (
-                                    <div className="px-6 py-3 bg-green-500 text-white rounded-xl text-[10px] font-black italic uppercase flex items-center gap-2 animate-bounce"><CheckCircle2 size={14} /> Anfrage raus!</div>
-                                  ) : (
-                                    <button onClick={() => handleRequestJoin(g.id)} className="px-6 py-3 bg-primary text-secondary rounded-xl text-[10px] font-black italic uppercase transition-all flex items-center gap-2 shadow-lg shadow-primary/20">Anfragen <ArrowRight size={14} /></button>
-                                  )}
-                               </div>
-                             ))
-                           ) : searchQuery.length >= 2 ? (
-                             <div className="py-10 text-center font-black text-foreground/10 uppercase text-[10px] italic tracking-widest">Keine Gruppe mit diesem Namen gefunden.</div>
-                           ) : null}
-                        </div>
-                     </div>
+                      <div className="py-10 text-center font-black text-foreground/20 uppercase text-xs italic tracking-widest">Kamera Zugriff erforderlich</div>
                    )}
                 </div>
              </motion.div>
