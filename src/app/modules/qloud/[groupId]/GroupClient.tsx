@@ -197,14 +197,14 @@ export default function GroupClient() {
          const res = await toggleModeratorAction(groupId as string, targetUserId);
          if (!res.success) alert("Fehler: " + res.error);
       } catch (err) {
-         alert("Verbindungsfehler bei der Rollen├ñnderung.");
+         alert("Verbindungsfehler bei der Rollenänderung.");
       } finally {
          setProcessingMemberId(null);
       }
    };
 
    const handleKickMember = async (targetUserId: string, targetUserName: string) => {
-      if (!isAdmin || !window.confirm(`M├Âchtest du ${targetUserName} wirklich aus der Qloud entfernen?`)) return;
+      if (!isAdmin || !window.confirm(`Möchtest du ${targetUserName} wirklich aus der Qloud entfernen?`)) return;
       setProcessingMemberId(targetUserId);
       try {
          const res = await kickMemberAction(groupId as string, targetUserId);
@@ -254,7 +254,7 @@ export default function GroupClient() {
    };
 
    const handleDeleteGroup = async () => {
-      if (!window.confirm("Bist du sicher? Alle Daten dieser Qloud werden permanent gel├Âscht.")) return;
+      if (!window.confirm("Bist du sicher? Alle Daten dieser Qloud werden permanent gelöscht.")) return;
       const res = await deleteGroup(groupId as string, user.uid);
       if (res.success) router.push("/modules/qloud");
    };
@@ -293,7 +293,7 @@ export default function GroupClient() {
                   <div className="space-y-3 md:space-y-4">
                      <h1 className="text-3xl md:text-5xl font-black italic uppercase tracking-tighter text-foreground">{group.name}</h1>
                      <p className="text-[10px] md:text-xs font-black uppercase text-primary italic tracking-widest">Authorized Members Only</p>
-                     <p className="text-foreground/40 text-[10px] md:text-sm italic max-w-sm mx-auto">Dieser Node ist verschl├╝sselt. Bitte sende eine Beitrittsanfrage an den Admin, um Zugriff auf den Content zu erhalten.</p>
+                     <p className="text-foreground/40 text-[10px] md:text-sm italic max-w-sm mx-auto">Dieser Node ist verschlüsselt. Bitte sende eine Beitrittsanfrage an den Admin, um Zugriff auf den Content zu erhalten.</p>
                   </div>
                   <div className="pt-4 md:pt-6">
                      {requestSent ? (
@@ -307,7 +307,7 @@ export default function GroupClient() {
                         </button>
                      )}
                   </div>
-                  <button onClick={() => router.push("/modules/qloud")} className="text-[8px] md:text-[10px] font-black uppercase text-foreground/20 italic tracking-widest hover:text-foreground transition-colors">Zur├╝ck zum Dashboard</button>
+                  <button onClick={() => router.push("/modules/qloud")} className="text-[8px] md:text-[10px] font-black uppercase text-foreground/20 italic tracking-widest hover:text-foreground transition-colors">Zurück zum Dashboard</button>
                </motion.div>
             </div>
          </SiteLayoutClient>
@@ -405,29 +405,41 @@ export default function GroupClient() {
                            </div>
                         </div>
 
-                        {/* 2. BILD-FREIGABE */}
-                        <div className="bg-primary/5 border border-primary/20 rounded-[2rem] p-6 md:p-10 space-y-8 shadow-xl">
-                           <div className="flex items-center gap-4">
-                              <div className="p-4 bg-primary rounded-2xl text-secondary"><ImageIcon size={24} /></div>
-                              <h2 className="text-2xl font-black italic uppercase text-primary">Medien Freigabe</h2>
-                           </div>
-                           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
-                              {pendingMedia.map((item) => (
-                                 <div key={item.id} className="relative aspect-square rounded-[1.5rem] overflow-hidden border border-border group">
-                                    <img src={item.url} className="w-full h-full object-cover" />
-                                    <div className="absolute inset-0 bg-black/60 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center p-2 md:p-4 gap-2 md:gap-4">
-                                       <p className="text-[7px] font-black uppercase text-white/50 text-center line-clamp-1">{item.userName}</p>
-                                       <div className="flex gap-2 md:gap-3">
-                                          <button onClick={() => handleApproveMedia(item.id)} className="p-3 md:p-4 bg-green-500 text-white rounded-full hover:scale-110 transition-all shadow-lg"><Check size={20} /></button>
-                                          <button onClick={() => handleDeleteMedia(item.id)} className="p-3 md:p-4 bg-red-500 text-white rounded-full hover:scale-110 transition-all shadow-lg"><X size={20} /></button>
-                                       </div>
-                                    </div>
-                                 </div>
-                              ))}
-                              {pendingMedia.length === 0 && <p className="col-span-full py-10 text-center text-foreground/20 font-black italic uppercase tracking-widest text-[10px]">Alle Medien gesichtet</p>}
-                           </div>
-                        </div>
-                     </motion.section>
+                         {/* 2. BILD-FREIGABE */}
+                         <div className="bg-primary/5 border border-primary/20 rounded-[2rem] p-6 md:p-10 space-y-8 shadow-xl">
+                            <div className="flex items-center gap-4">
+                               <div className="p-4 bg-primary rounded-2xl text-secondary"><ImageIcon size={24} /></div>
+                               <h2 className="text-2xl font-black italic uppercase text-primary">Medien Freigabe</h2>
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                               {pendingMedia.map((item) => (
+                                  <div key={item.id} className="relative flex flex-col bg-card border border-border rounded-[2.5rem] overflow-hidden shadow-2xl group hover:border-primary/20 transition-all">
+                                     <div className="aspect-square relative overflow-hidden">
+                                        <img src={item.url} className="w-full h-full object-cover transition-transform group-hover:scale-105" />
+                                        <div className="absolute top-4 left-4 px-3 py-1 bg-black/60 backdrop-blur-md rounded-lg border border-white/5">
+                                           <p className="text-[8px] font-black uppercase text-white italic tracking-widest">{item.userName}</p>
+                                        </div>
+                                     </div>
+                                     <div className="p-5 bg-foreground/[0.03] flex items-center justify-between gap-3 border-t border-white/5 mt-auto">
+                                        <button 
+                                          onClick={() => handleDeleteMedia(item.id)}
+                                          className="flex-1 py-4 bg-red-500/10 text-red-500 border border-red-500/20 rounded-xl font-black italic uppercase text-[10px] hover:bg-red-500 hover:text-white transition-all flex items-center justify-center gap-2 shadow-lg"
+                                        >
+                                           <X size={16} /> Ablehnen
+                                        </button>
+                                        <button 
+                                          onClick={() => handleApproveMedia(item.id)}
+                                          className="flex-1 py-4 bg-green-500 text-white rounded-xl font-black italic uppercase text-[10px] hover:scale-[1.02] transition-all shadow-lg shadow-green-500/20 flex items-center justify-center gap-2"
+                                        >
+                                           <Check size={16} /> Freigeben
+                                        </button>
+                                     </div>
+                                  </div>
+                               ))}
+                               {pendingMedia.length === 0 && <p className="col-span-full py-10 text-center text-foreground/20 font-black italic uppercase tracking-widest text-[10px]">Alle Medien gesichtet</p>}
+                            </div>
+                         </div>
+                      </motion.section>
                   )}
 
                   {isAdmin && activeTab === "admin" && (
@@ -488,7 +500,7 @@ export default function GroupClient() {
                            </div>
 
                            <div className="pt-12 border-t border-white/5 flex flex-col items-center">
-                              <p className="text-[10px] font-black uppercase text-red-500/40 italic mb-6 tracking-tighter">Gefahrenzone: Permanenten L├Âschvorgang einleiten</p>
+                              <p className="text-[10px] font-black uppercase text-red-500/40 italic mb-6 tracking-tighter">Gefahrenzone: Permanenten Löschvorgang einleiten</p>
                               <button onClick={handleDeleteGroup} className="w-full py-8 md:py-10 bg-red-500/5 text-red-500 border border-red-500/20 font-black italic uppercase rounded-[2rem] md:rounded-[3rem] hover:bg-red-500 hover:text-white transition-all shadow-2xl text-xs md:text-sm tracking-[0.3em]">Destruct Node</button>
                            </div>
                         </div>
@@ -534,7 +546,7 @@ export default function GroupClient() {
                               <code className="text-[10px] font-bold text-foreground/40 truncate mr-4 italic">Identifier: {groupId}</code>
                               <button onClick={() => { navigator.clipboard.writeText(window.location.href); setCopied(true); setTimeout(() => setCopied(false), 2000); }} className={`p-4 rounded-xl transition-all shadow-md ${copied ? 'bg-green-500 text-white' : 'bg-foreground/10 text-foreground'}`}>{copied ? <Check size={20} /> : <Copy size={20} />}</button>
                            </div>
-                           <p className="text-center text-[10px] font-black uppercase text-foreground/40 italic tracking-widest leading-relaxed mt-4">G├ñste m├╝ssen eine Beitrittsanfrage senden.<br /> Genehmigung erfolgt durch den Admin.</p>
+                           <p className="text-center text-[10px] font-black uppercase text-foreground/40 italic tracking-widest leading-relaxed mt-4">Gäste müssen eine Beitrittsanfrage senden.<br /> Genehmigung erfolgt durch den Admin.</p>
                         </div>
                      </div>
                   </motion.div>
