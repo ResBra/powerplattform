@@ -391,13 +391,13 @@ export default function GroupClient() {
                               <div className="p-4 bg-amber-500 rounded-2xl text-black"><CheckCircle2 size={24} /></div>
                               <h2 className="text-2xl font-black italic uppercase text-amber-500">Zutritts-Anfragen</h2>
                            </div>
-                           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                               {joinRequests.map((req) => (
-                                 <div key={req.requestId} className="p-6 bg-card border border-border rounded-[2rem] flex items-center justify-between shadow-2xl">
-                                    <span className="font-black italic uppercase text-xs truncate max-w-[120px]">{req.userName}</span>
-                                    <div className="flex gap-2">
-                                       <button onClick={() => handleResolveRequest(req.userId, req.userName, true)} className="p-3 bg-green-500 text-white rounded-xl hover:scale-110 transition-all"><Check size={18} /></button>
-                                       <button onClick={() => handleResolveRequest(req.userId, req.userName, false)} className="p-3 bg-red-500 text-white rounded-xl hover:scale-110 transition-all"><X size={18} /></button>
+                                 <div key={req.requestId} className="p-5 bg-card border border-border rounded-[1.5rem] flex items-center justify-between shadow-2xl gap-4">
+                                    <span className="font-black italic uppercase text-[10px] truncate">{req.userName}</span>
+                                    <div className="flex gap-2 shrink-0">
+                                       <button onClick={() => handleResolveRequest(req.userId, req.userName, true)} className="p-2.5 bg-green-500 text-white rounded-xl hover:scale-110 transition-all"><Check size={16} /></button>
+                                       <button onClick={() => handleResolveRequest(req.userId, req.userName, false)} className="p-2.5 bg-red-500 text-white rounded-xl hover:scale-110 transition-all"><X size={16} /></button>
                                     </div>
                                  </div>
                               ))}
@@ -411,15 +411,15 @@ export default function GroupClient() {
                               <div className="p-4 bg-primary rounded-2xl text-secondary"><ImageIcon size={24} /></div>
                               <h2 className="text-2xl font-black italic uppercase text-primary">Medien Freigabe</h2>
                            </div>
-                           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
                               {pendingMedia.map((item) => (
-                                 <div key={item.id} className="relative aspect-square rounded-2xl overflow-hidden border border-border group">
+                                 <div key={item.id} className="relative aspect-square rounded-[1.5rem] overflow-hidden border border-border group">
                                     <img src={item.url} className="w-full h-full object-cover" />
-                                    <div className="absolute inset-0 bg-black/40 md:bg-black/60 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center p-4 gap-4">
-                                       <p className="text-[8px] font-black uppercase text-white/50 text-center">{item.userName}</p>
-                                       <div className="flex gap-3">
-                                          <button onClick={() => handleApproveMedia(item.id)} className="p-4 bg-green-500 text-white rounded-full hover:scale-110 transition-all shadow-lg"><Check size={20} /></button>
-                                          <button onClick={() => handleDeleteMedia(item.id)} className="p-4 bg-red-500 text-white rounded-full hover:scale-110 transition-all shadow-lg"><X size={20} /></button>
+                                    <div className="absolute inset-0 bg-black/60 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center p-2 md:p-4 gap-2 md:gap-4">
+                                       <p className="text-[7px] font-black uppercase text-white/50 text-center line-clamp-1">{item.userName}</p>
+                                       <div className="flex gap-2 md:gap-3">
+                                          <button onClick={() => handleApproveMedia(item.id)} className="p-3 md:p-4 bg-green-500 text-white rounded-full hover:scale-110 transition-all shadow-lg"><Check size={20} /></button>
+                                          <button onClick={() => handleDeleteMedia(item.id)} className="p-3 md:p-4 bg-red-500 text-white rounded-full hover:scale-110 transition-all shadow-lg"><X size={20} /></button>
                                        </div>
                                     </div>
                                  </div>
