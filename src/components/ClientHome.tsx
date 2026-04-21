@@ -133,10 +133,10 @@ export default function ClientHome({ settings: initialSettings }: any) {
           <div className="space-y-6 md:space-y-10">
             <div className="space-y-0 -mt-2">
                <div className="flex flex-col">
-                  <span className="text-[clamp(3rem,8vw,7rem)] font-black italic uppercase tracking-tighter text-foreground leading-[0.85] drop-shadow-xl break-words">
+                  <span className="text-[clamp(2.5rem,10vw,7rem)] font-black italic uppercase tracking-tighter text-foreground leading-[0.85] drop-shadow-xl whitespace-nowrap">
                      Power
                   </span>
-                  <span className="text-[clamp(3rem,8vw,7rem)] font-black italic uppercase tracking-tighter text-primary leading-[0.85] mt-2 drop-shadow-xl break-words">
+                  <span className="text-[clamp(2.5rem,10vw,7rem)] font-black italic uppercase tracking-tighter text-primary leading-[0.85] mt-2 drop-shadow-xl whitespace-nowrap">
                      Plattform.
                   </span>
                </div>

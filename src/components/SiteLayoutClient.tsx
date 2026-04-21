@@ -226,13 +226,13 @@ export default function SiteLayoutClient({ children, activePage, settings }: Sit
 
       {/* MAIN CONTENT AREA */}
       <div className="flex-1 flex flex-col min-w-0 relative">
-        <main className="flex-1 p-6 md:p-12 lg:p-16 pt-28 lg:pt-16 max-w-7xl mx-auto w-full">
+        <main className="flex-1 p-6 md:p-12 lg:p-16 pt-28 lg:pt-16 max-w-[1400px] mx-auto w-full">
           {children}
         </main>
         
         {/* GLOBAL FOOTER */}
         <footer className="p-10 border-t border-white/5 bg-foreground/[0.02] mt-auto">
-           <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
+           <div className="max-w-[1400px] mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
               <div className="flex items-center gap-4">
                  <img src="/icon.png" alt="" className="w-8 h-8 opacity-20" />
                  <p className="text-[10px] font-black uppercase text-foreground/20 italic tracking-[0.4em]">© 2026 PowerPlattform Digital</p>
