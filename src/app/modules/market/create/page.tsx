@@ -17,7 +17,8 @@ import {
   Clock,
   Sparkles,
   Zap,
-  ShieldCheck
+  ShieldCheck,
+  Plus
 } from "lucide-react";
 import { auth } from "@/lib/firebase";
 import { uploadImage } from "@/lib/storage";

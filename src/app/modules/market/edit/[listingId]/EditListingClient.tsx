@@ -14,7 +14,8 @@ import {
   Clock,
   Save,
   Upload,
-  DollarSign
+  DollarSign,
+  Plus
 } from "lucide-react";
 import { auth, db } from "@/lib/firebase";
 import { doc, getDoc } from "firebase/firestore";
