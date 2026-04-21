@@ -18,6 +18,8 @@ import {
   Lock
 } from "lucide-react";
 import { useCart } from "../CartContext";
+import { auth } from "@/lib/firebase";
+import { createOrderAction } from "../actions";
 
 const PAYMENT_METHODS = [
   { id: "paypal", name: "PayPal", icon: "https://www.paypalobjects.com/webstatic/mktg/logo-center/PP_Acceptance_Marks_for_LogoCenter_266x142.png", subtitle: "Sicher & Schnell" },
@@ -32,11 +34,37 @@ export default function CheckoutPage() {
   const [isProcessing, setIsProcessing] = useState(false);
 
   const handleOrder = async () => {
+    if (!auth.currentUser) {
+      alert("Bitte logge dich ein, um die Bestellung abzuschließen.");
+      return;
+    }
+
     setIsProcessing(true);
-    // Simulate API call
-    await new Promise(r => setTimeout(r, 2000));
-    clearCart();
-    router.push("/modules/market/checkout/success");
+    
+    try {
+      const orderData = {
+        buyerId: auth.currentUser.uid,
+        buyerName: auth.currentUser.displayName || auth.currentUser.email?.split('@')[0] || "Gast",
+        items: cart,
+        totalPrice: totalPrice,
+        paymentMethod: selectedPayment
+      };
+
+      const result = await createOrderAction(orderData);
+      
+      if (result.success) {
+        // Give a bit of "processing" feel
+        await new Promise(r => setTimeout(r, 1500));
+        clearCart();
+        router.push("/modules/market/checkout/success");
+      } else {
+        alert("Fehler bei der Bestellung: " + result.error);
+      }
+    } catch (err) {
+      alert("Ein unerwarteter Fehler ist aufgetreten.");
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   return (

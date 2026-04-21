@@ -2,6 +2,7 @@ import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
 import { getFirestore, connectFirestoreEmulator } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
+import { getAnalytics, isSupported } from "firebase/analytics";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -30,6 +31,7 @@ let auth: any = null;
 let googleProvider: any = null;
 let db: any = null;
 let storage: any = null;
+let analytics: any = null;
 
 const initFirebase = () => {
     if (typeof window === "undefined") return; // Skip on server/build
@@ -46,6 +48,11 @@ const initFirebase = () => {
             
             if (isConfigValid) {
                 console.log("🚀 CLOUD ENGINE: Connected to project [" + firebaseConfig.projectId + "]");
+                
+                // Initialize Analytics
+                isSupported().then(supported => {
+                    if (supported) analytics = getAnalytics(app);
+                });
             } else {
                 console.warn("⚠️ CLOUD WARNING: Firebase initialized with INCOMPLETE configuration.");
             }
@@ -57,4 +64,4 @@ const initFirebase = () => {
 
 initFirebase();
 
-export { auth, googleProvider, db, storage, app };
+export { auth, googleProvider, db, storage, analytics, app };

@@ -166,3 +166,42 @@ export async function deleteListingAction(listingId: string, userId: string) {
     return { success: false, error: err.message };
   }
 }
+
+// 📦 BESTELLUNG ERSTELLEN
+export async function createOrderAction(orderData: {
+  buyerId: string;
+  buyerName: string;
+  items: any[];
+  totalPrice: number;
+  paymentMethod: string;
+}) {
+  try {
+    const docRef = await addDoc(collection(db, "market_orders"), {
+      ...orderData,
+      status: "COMPLETED",
+      createdAt: serverTimestamp(),
+    });
+    return { success: true, id: docRef.id };
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+}
+
+// 📊 BESTELLUNGEN LADEN (Für Analytics)
+export async function getOrdersAction() {
+  try {
+    const q = query(collection(db, "market_orders"), orderBy("createdAt", "desc"));
+    const snap = await getDocs(q);
+    return snap.docs.map(d => {
+      const data = d.data();
+      return {
+        id: d.id,
+        ...data,
+        createdAt: data.createdAt?.toMillis() || Date.now()
+      };
+    });
+  } catch (err) {
+    console.error(err);
+    return [];
+  }
+}

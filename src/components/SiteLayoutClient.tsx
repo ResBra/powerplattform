@@ -136,6 +136,7 @@ export default function SiteLayoutClient({ children, activePage, settings }: Sit
 
   const navItems = [
     { label: "Dashboard", href: "/dashboard", icon: <LayoutDashboard size={20} />, id: "dashboard" },
+    { label: "Command Center", href: "/modules/analytics", icon: <Activity size={20} />, id: "analytics" },
     { label: "Qloud Hub", href: "/modules/qloud", icon: <Box size={20} />, id: "qloud" },
     { label: "Market", href: "/modules/market", icon: <ShoppingBag size={20} />, id: "market" },
     { label: "Profil", href: "/profile", icon: <User size={20} />, id: "profile" },
