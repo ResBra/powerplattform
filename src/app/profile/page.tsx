@@ -25,6 +25,7 @@ import {
   AlertTriangle
 } from "lucide-react";
 import { 
+  updateProfile,
   updatePassword, 
   deleteUser, 
   reauthenticateWithCredential, 
