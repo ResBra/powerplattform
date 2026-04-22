@@ -150,7 +150,8 @@ export default function ClientHome({ settings: initialSettings }: any) {
       
       {/* SHOWCASE HERO SECTION - LIQUID BRANDING V1.6.2 */}
       <section className="relative p-6 md:p-16 lg:p-20 bg-card border border-white/5 rounded-[2.5rem] md:rounded-[4rem] lg:rounded-[5rem] overflow-hidden shadow-2xl">
-        <div className="absolute -top-20 -right-20 opacity-10 pointer-events-none -rotate-12 hidden lg:block">
+        {/* FINE-TUNE OPACITY HERE: Change 'opacity-20' to your liking (e.g., opacity-10 to opacity-50) */}
+        <div className="absolute -top-20 -left-20 opacity-20 pointer-events-none -rotate-12 hidden lg:block">
             <img src="/icon.png" alt="" className="w-[800px] h-[800px] object-contain" />
         </div>
         
