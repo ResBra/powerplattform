@@ -150,18 +150,18 @@ export default function ClientHome({ settings: initialSettings }: any) {
       
       {/* SHOWCASE HERO SECTION - LIQUID BRANDING V1.6.2 */}
       <section className="relative p-6 md:p-16 lg:p-20 bg-card border border-white/5 rounded-[2.5rem] md:rounded-[4rem] lg:rounded-[5rem] overflow-hidden shadow-2xl">
-        <div className="absolute top-0 right-0 p-12 opacity-5 pointer-events-none -rotate-12 translate-x-1/4 hidden lg:block">
-            <Terminal size={400} />
+        <div className="absolute -top-20 -right-20 opacity-[0.03] pointer-events-none -rotate-12 hidden lg:block">
+            <img src="/icon.png" alt="" className="w-[800px] h-[800px] object-contain" />
         </div>
         
         <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-10 md:gap-16 items-center">
           <div className="space-y-6 md:space-y-10">
             <div className="space-y-0 -mt-2">
                <div className="flex flex-col">
-                  <span className="text-[clamp(2.5rem,10vw,7rem)] font-black italic uppercase tracking-tighter text-foreground leading-[0.85] drop-shadow-xl whitespace-nowrap">
+                  <span className="text-[clamp(2.5rem,10vw,7rem)] font-black italic uppercase tracking-tighter text-foreground leading-[0.85] drop-shadow-xl">
                      Power
                   </span>
-                  <span className="text-[clamp(2.5rem,10vw,7rem)] font-black italic uppercase tracking-tighter text-gradient leading-[0.85] mt-2 drop-shadow-xl whitespace-nowrap">
+                  <span className="text-[clamp(2.5rem,10vw,7rem)] font-black italic uppercase tracking-tighter text-gradient leading-[0.85] mt-2 drop-shadow-xl">
                      Plattform.
                   </span>
                </div>
@@ -190,7 +190,7 @@ export default function ClientHome({ settings: initialSettings }: any) {
             </div>
           </div>
 
-          <div className="relative w-full lg:max-w-md ml-auto">
+          <div className="relative w-full lg:max-w-md ml-auto lg:translate-y-20 lg:translate-x-10">
              <div className="absolute inset-0 bg-primary/10 blur-[40px] md:blur-[60px] rounded-full"></div>
              <div className="relative glass rounded-[2.5rem] md:rounded-[3rem] p-6 md:p-10 space-y-6 md:space-y-8 shadow-2xl">
                 <div className="flex items-center gap-4 border-b border-white/5 pb-4 md:pb-6">
