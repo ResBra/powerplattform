@@ -164,9 +164,9 @@ export default function MarketHub() {
                       onClick={() => router.push(`/modules/market/listing/${item.id}`)}
                       className="group relative cursor-pointer"
                     >
-                      <div className="flex flex-col min-h-[480px] bg-card border border-white/5 rounded-[2.5rem] overflow-hidden shadow-xl transition-all group-hover:shadow-primary/10 group-hover:border-primary/20 group-hover:-translate-y-2">
+                      <div className="flex flex-col h-[520px] bg-card border border-white/5 rounded-[2.5rem] overflow-hidden shadow-xl transition-all group-hover:shadow-primary/10 group-hover:border-primary/20 group-hover:-translate-y-2">
                          {/* IMAGE */}
-                         <div className="w-full h-[65%] relative overflow-hidden">
+                         <div className="w-full h-[320px] relative overflow-hidden bg-foreground/5">
                             <img 
                               src={item.imageUrls?.[0] || item.imageUrl} 
                               alt={item.title}
