@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { 
+  User,
   ShieldCheck, 
   Terminal, 
   ArrowRight, 
@@ -99,6 +100,28 @@ export default function ClientHome({ settings: initialSettings }: any) {
       href: "/modules/qloud",
       bgImage: "/images/showcase/qloud_bg.png",
       color: "from-blue-500/5"
+    },
+    {
+      id: "profile",
+      title: "User Profile",
+      desc: "Zentrale Identitäts- & Sicherheitsverwaltung",
+      icon: <User className="text-amber-500" size={32} />,
+      status: "Verified",
+      metrics: "Identity Core",
+      href: "/modules/profile",
+      bgImage: "/images/showcase/profile_bg.png",
+      color: "from-amber-500/10"
+    },
+    {
+      id: "command",
+      title: "Command Center",
+      desc: "Echtzeit-Überwachung & Systemsteuerung",
+      icon: <Terminal className="text-indigo-500" size={32} />,
+      status: "Active",
+      metrics: "Root Access",
+      href: "/modules/command",
+      bgImage: "/images/showcase/command_bg.png",
+      color: "from-indigo-500/10"
     }
   ];
 
