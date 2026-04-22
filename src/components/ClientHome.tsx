@@ -255,7 +255,7 @@ export default function ClientHome({ settings: initialSettings }: any) {
         </div>
       </section>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 pb-20 opacity-40 hover:opacity-100 transition-opacity px-2 md:px-0">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 pb-20 px-2 md:px-0">
           <div className="bg-card p-4 md:p-6 rounded-2xl md:rounded-3xl border border-border flex flex-col gap-3">
              <Cpu className="text-foreground/20" size={16} />
              <div>
