@@ -52,8 +52,35 @@
 
 @layer components {
   .btn-primary {
-    @apply bg-primary text-secondary font-black px-8 py-4 rounded-2xl hover:bg-primary-light hover:scale-105 active:scale-95 transition-all shadow-lg;
+    @apply text-secondary font-black px-8 py-4 rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-xl;
     background: linear-gradient(135deg, var(--primary-1), var(--primary-2));
+    box-shadow: 0 10px 30px -10px var(--primary-1);
+  }
+
+  .btn-primary:hover {
+    box-shadow: 0 15px 40px -10px var(--primary-1);
+  }
+
+  .text-gradient {
+    background: linear-gradient(135deg, var(--primary-1), var(--primary-2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    display: inline-block;
+  }
+
+  .bg-gradient-primary {
+    background: linear-gradient(135deg, var(--primary-1), var(--primary-2));
+  }
+
+  .border-gradient-primary {
+    border: 2px solid transparent;
+    background-image: linear-gradient(var(--card), var(--card)), linear-gradient(135deg, var(--primary-1), var(--primary-2));
+    background-origin: border-box;
+    background-clip: padding-box, border-box;
+  }
+
+  .shadow-glow-primary {
+    box-shadow: 0 0 30px -5px var(--primary-1), 0 0 15px -5px var(--primary-2);
   }
 }
 
@@ -64,10 +91,4 @@
 
 [data-theme='dark'] .glass {
   @apply bg-white/5 border-white/10;
-}
-
-.text-gradient {
-  background: linear-gradient(135deg, var(--primary-1), var(--primary-2));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
 }

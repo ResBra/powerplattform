@@ -161,20 +161,20 @@ export default function ClientHome({ settings: initialSettings }: any) {
                   <span className="text-[clamp(2.5rem,10vw,7rem)] font-black italic uppercase tracking-tighter text-foreground leading-[0.85] drop-shadow-xl whitespace-nowrap">
                      Power
                   </span>
-                  <span className="text-[clamp(2.5rem,10vw,7rem)] font-black italic uppercase tracking-tighter text-primary leading-[0.85] mt-2 drop-shadow-xl whitespace-nowrap">
+                  <span className="text-[clamp(2.5rem,10vw,7rem)] font-black italic uppercase tracking-tighter text-gradient leading-[0.85] mt-2 drop-shadow-xl whitespace-nowrap">
                      Plattform.
                   </span>
                </div>
                <div className="pt-8">
-                  <div className="px-4 py-1.5 bg-primary/10 border border-primary/20 rounded-full w-fit">
-                     <span className="text-[8px] md:text-[10px] font-black uppercase text-primary italic tracking-[0.2em]">Service Showcase v1.6.2</span>
+                  <div className="px-4 py-1.5 bg-gradient-primary opacity-20 rounded-full w-fit">
+                     <span className="text-[8px] md:text-[10px] font-black uppercase text-foreground italic tracking-[0.2em]">Service Showcase v1.6.2</span>
                   </div>
                </div>
             </div>
 
             <p className="text-muted text-sm md:text-xl italic font-medium leading-relaxed max-w-xl">
                Dieses Portal dient zur Veranschaulichung unserer Programmierdienstleistungen. 
-               Wir entwickeln <span className="text-primary font-bold italic underline decoration-primary/40 underline-offset-8">Boutique-Software</span>, die exakt deinen Anforderungen entspricht.
+               Wir entwickeln <span className="text-gradient font-bold italic underline decoration-primary/40 underline-offset-8">Boutique-Software</span>, die exakt deinen Anforderungen entspricht.
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
@@ -194,30 +194,30 @@ export default function ClientHome({ settings: initialSettings }: any) {
              <div className="absolute inset-0 bg-primary/10 blur-[40px] md:blur-[60px] rounded-full"></div>
              <div className="relative glass rounded-[2.5rem] md:rounded-[3rem] p-6 md:p-10 space-y-6 md:space-y-8 shadow-2xl">
                 <div className="flex items-center gap-4 border-b border-white/5 pb-4 md:pb-6">
-                   <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-primary flex items-center justify-center text-secondary shadow-lg shadow-primary/20">
+                   <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-gradient-primary flex items-center justify-center text-secondary shadow-lg shadow-glow-primary">
                       <Layers size={24} />
                    </div>
                    <div>
                       <h3 className="text-lg md:text-xl font-black italic uppercase text-foreground leading-none">Core Competence</h3>
-                      <p className="text-[9px] md:text-[10px] font-black uppercase text-primary italic tracking-widest mt-1">Our Strategy</p>
+                      <p className="text-[9px] md:text-[10px] font-black uppercase text-gradient italic tracking-widest mt-1">Our Strategy</p>
                    </div>
                 </div>
                 <div className="space-y-4 md:space-y-6">
                    <div className="flex gap-4 md:gap-6">
-                      <div className="text-primary font-black italic text-xl md:text-2xl">01</div>
+                      <div className="text-gradient font-black italic text-xl md:text-2xl">01</div>
                       <p className="text-[10px] md:text-xs text-foreground/60 italic font-medium leading-relaxed">Entwicklung individueller Softwärelösungen für komplexe Prozesse.</p>
                    </div>
                    <div className="flex gap-4 md:gap-6">
-                      <div className="text-primary font-black italic text-xl md:text-2xl">02</div>
+                      <div className="text-gradient font-black italic text-xl md:text-2xl">02</div>
                       <p className="text-[10px] md:text-xs text-foreground/60 italic font-medium leading-relaxed">Optimierung für PWA inkl. Offline-Support & High-Speed Performance.</p>
                    </div>
                    <div className="flex gap-4 md:gap-6">
-                      <div className="text-primary font-black italic text-xl md:text-2xl">03</div>
+                      <div className="text-gradient font-black italic text-xl md:text-2xl">03</div>
                       <p className="text-[10px] md:text-xs text-foreground/60 italic font-medium leading-relaxed">Integration nativer Schnittstellen und professionelles Store-Deployment.</p>
                    </div>
                 </div>
                 <div className="pt-2 md:pt-4 flex justify-center">
-                   <div className="flex items-center gap-3 md:gap-4 px-4 md:px-6 py-2 md:py-3 bg-primary/10 border border-primary/20 rounded-full text-[7px] md:text-[8px] font-black uppercase tracking-[0.3em] text-primary italic text-center">
+                   <div className="flex items-center gap-3 md:gap-4 px-4 md:px-6 py-2 md:py-3 bg-gradient-primary opacity-20 rounded-full text-[7px] md:text-[8px] font-black uppercase tracking-[0.3em] text-foreground italic text-center">
                       <Sparkles size={12} /> Ready for Global Production
                    </div>
                 </div>
@@ -230,7 +230,7 @@ export default function ClientHome({ settings: initialSettings }: any) {
       <section className="space-y-6 md:space-y-8 px-2 md:px-0">
         <div className="flex items-center justify-between border-b border-border pb-4">
           <h2 className="text-lg md:text-xl font-black text-foreground/40 uppercase tracking-[0.3em] italic">Deployte Module.</h2>
-          <span className="text-[9px] md:text-[10px] font-black text-primary uppercase italic tracking-widest px-3 py-1 bg-primary/10 rounded-lg flex items-center gap-2">
+          <span className="text-[9px] md:text-[10px] font-black text-secondary uppercase italic tracking-widest px-3 py-1 bg-gradient-primary rounded-lg flex items-center gap-2">
             <Rocket size={12} /> Live & Testbar
           </span>
         </div>
@@ -242,7 +242,7 @@ export default function ClientHome({ settings: initialSettings }: any) {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: idx * 0.1 }}
-                className="group relative p-8 md:p-12 bg-card border border-border rounded-[3rem] md:rounded-[4rem] shadow-sm hover:shadow-2xl hover:shadow-primary/10 transition-all duration-700 cursor-pointer overflow-hidden min-h-[350px] md:min-h-[400px] flex flex-col justify-between"
+                className="group relative p-8 md:p-12 bg-card border border-border rounded-[3rem] md:rounded-[4rem] shadow-sm hover:shadow-2xl hover:shadow-glow-primary transition-all duration-700 cursor-pointer overflow-hidden min-h-[350px] md:min-h-[400px] flex flex-col justify-between"
               >
                  <div className="absolute inset-0 z-0">
                    <img 
@@ -256,17 +256,17 @@ export default function ClientHome({ settings: initialSettings }: any) {
                 
                 <div className="relative z-10 flex flex-col h-full gap-10">
                   <div className="flex items-start justify-between">
-                    <div className="p-5 md:p-6 bg-foreground/10 backdrop-blur-md rounded-3xl group-hover:scale-110 group-hover:bg-primary transition-all duration-500 group-hover:text-secondary group-hover:shadow-xl group-hover:shadow-primary/30">
+                    <div className="p-5 md:p-6 bg-foreground/10 backdrop-blur-md rounded-3xl group-hover:scale-110 group-hover:bg-gradient-primary transition-all duration-500 group-hover:text-secondary group-hover:shadow-glow-primary">
                       {engine.icon}
                     </div>
                     <div className="text-right">
-                      <p className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-primary mb-1">{engine.status}</p>
+                      <p className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-gradient mb-1">{engine.status}</p>
                       <p className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-foreground/20 leading-none">{engine.metrics}</p>
                     </div>
                   </div>
   
                   <div>
-                    <h3 className="text-3xl md:text-5xl font-black text-foreground italic uppercase tracking-tighter mb-4 group-hover:text-primary transition-colors leading-none">{engine.title}</h3>
+                    <h3 className="text-3xl md:text-5xl font-black text-foreground italic uppercase tracking-tighter mb-4 group-hover:text-gradient transition-colors leading-none">{engine.title}</h3>
                     <p className="text-foreground/40 text-xs md:text-lg font-medium italic max-w-sm leading-relaxed">{engine.desc}</p>
                   </div>
   
@@ -306,7 +306,7 @@ export default function ClientHome({ settings: initialSettings }: any) {
              <Activity className="text-foreground/20" size={16} />
              <div>
                 <p className="text-[7px] md:text-[8px] font-black uppercase text-foreground/20 italic tracking-widest">Network</p>
-                <p className="text-md md:text-lg font-black italic tracking-tighter text-primary">AUTHORIZED</p>
+                <p className="text-md md:text-lg font-black italic tracking-tighter text-gradient">AUTHORIZED</p>
              </div>
           </div>
       </div>
