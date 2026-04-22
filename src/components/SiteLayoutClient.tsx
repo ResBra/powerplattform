@@ -194,15 +194,17 @@ export default function SiteLayoutClient({ children, activePage, settings }: Sit
         </div>
       </motion.aside>
 
-      {/* MOBILE HEADER (SHRINK ON SCROLL) */}
-      <header className={`lg:hidden fixed top-0 inset-x-0 z-[110] flex items-center justify-between px-6 border-b border-white/5 shadow-xl transition-all duration-500 ${isScrolled ? 'h-14 bg-black/80 backdrop-blur-md' : 'h-24 bg-black'}`}>
-          <Link href="/dashboard" className={`flex items-center gap-3 text-white transition-all duration-500 ${isScrolled ? 'scale-75' : 'scale-100'}`}>
-             <img src="/icon.png" alt="PowerNode" className="w-9 h-9 object-contain" />
-             <span className="font-black italic uppercase tracking-tighter text-lg">Power<span className="text-primary">Node.</span></span>
+      {/* MOBILE HEADER (FLOATING & SHRINKING) */}
+      <header className={`lg:hidden fixed top-0 inset-x-0 z-[110] flex items-center justify-between px-6 pointer-events-none transition-all duration-500 ${isScrolled ? 'h-14' : 'h-24'}`}>
+          <Link href="/dashboard" className={`pointer-events-auto flex items-center gap-3 text-white transition-all duration-500 ${isScrolled ? 'scale-75 origin-left' : 'scale-100 origin-left'}`}>
+             <div className="p-2 bg-black/20 backdrop-blur-md rounded-2xl border border-white/10 shadow-2xl">
+                <img src="/icon.png" alt="PowerNode" className="w-8 h-8 object-contain" />
+             </div>
+             <span className="font-black italic uppercase tracking-tighter text-lg drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)]">Power<span className="text-primary">Node.</span></span>
           </Link>
           <button 
             onClick={() => setIsSettingsOpen(true)} 
-            className={`bg-white/10 rounded-2xl text-white/70 hover:bg-white/20 transition-all duration-500 ${isScrolled ? 'p-2 scale-75' : 'p-3 scale-100'}`}
+            className={`pointer-events-auto bg-black/20 backdrop-blur-md border border-white/10 rounded-2xl text-white/70 hover:bg-white/30 transition-all duration-500 shadow-2xl ${isScrolled ? 'p-2 scale-75 origin-right' : 'p-3 scale-100 origin-right'}`}
           >
             <Settings size={20} />
           </button>
@@ -214,46 +216,61 @@ export default function SiteLayoutClient({ children, activePage, settings }: Sit
           {children}
         </main>
         
-        {/* APP-STYLE BOTTOM NAVIGATION (Mobile Only) */}
-        <nav className="lg:hidden fixed bottom-0 inset-x-0 h-24 bg-card/80 backdrop-blur-2xl border-t border-border z-[200] px-4 md:px-10 flex items-center justify-around shadow-[0_-10px_40px_rgba(0,0,0,0.2)]">
+        {/* APP-STYLE BOTTOM NAVIGATION (PREMIUM FLOATING STYLE) */}
+        <nav className="lg:hidden fixed bottom-6 inset-x-6 h-20 bg-card/40 backdrop-blur-3xl border border-white/5 rounded-[2.5rem] z-[200] px-6 flex items-center justify-around shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
            {/* LEFT: Market & Qloud */}
-           <div className="flex items-center gap-2 md:gap-8">
-              <Link href="/modules/market" className={`flex flex-col items-center gap-1 group transition-all ${activePage === 'market' ? 'text-primary' : 'text-foreground/40'}`}>
-                 <div className={`p-3 md:p-4 rounded-full transition-all duration-500 ${activePage === 'market' ? 'bg-primary text-secondary shadow-lg shadow-primary/20 scale-110' : 'bg-foreground/5 hover:bg-foreground/10'}`}>
-                    <ShoppingBag size={20} />
+           <div className="flex items-center gap-4">
+              <Link href="/modules/market" className="relative flex flex-col items-center">
+                 {activePage === 'market' && (
+                    <motion.div layoutId="activeGlow" className="absolute -inset-4 bg-primary/20 blur-xl rounded-full" />
+                 )}
+                 <div className={`relative z-10 p-3 rounded-2xl transition-all duration-500 ${activePage === 'market' ? 'text-primary scale-110' : 'text-foreground/40 hover:text-foreground'}`}>
+                    <ShoppingBag size={22} />
+                    {activePage === 'market' && <motion.div layoutId="activeLine" className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-1 h-1 bg-primary rounded-full" />}
                  </div>
-                 <span className="text-[8px] md:text-[10px] font-black uppercase italic tracking-widest hidden md:block">Market</span>
               </Link>
-              <Link href="/modules/qloud" className={`flex flex-col items-center gap-1 group transition-all ${activePage === 'qloud' ? 'text-blue-500' : 'text-foreground/40'}`}>
-                 <div className={`p-3 md:p-4 rounded-full transition-all duration-500 ${activePage === 'qloud' ? 'bg-blue-500 text-secondary shadow-lg shadow-blue-500/20 scale-110' : 'bg-foreground/5 hover:bg-foreground/10'}`}>
-                    <Box size={20} />
+              <Link href="/modules/qloud" className="relative flex flex-col items-center">
+                 {activePage === 'qloud' && (
+                    <motion.div layoutId="activeGlow" className="absolute -inset-4 bg-blue-500/20 blur-xl rounded-full" />
+                 )}
+                 <div className={`relative z-10 p-3 rounded-2xl transition-all duration-500 ${activePage === 'qloud' ? 'text-blue-500 scale-110' : 'text-foreground/40 hover:text-foreground'}`}>
+                    <Box size={22} />
+                    {activePage === 'qloud' && <motion.div layoutId="activeLine" className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-1 h-1 bg-blue-500 rounded-full" />}
                  </div>
-                 <span className="text-[8px] md:text-[10px] font-black uppercase italic tracking-widest hidden md:block">Qloud Hub</span>
               </Link>
            </div>
 
-           {/* CENTER: DASHBOARD (LARGE) */}
-           <div className="relative -top-6">
-              <Link href="/dashboard" className={`flex flex-col items-center gap-1 group transition-all ${activePage === 'dashboard' ? 'text-primary' : 'text-foreground/40'}`}>
-                 <div className={`p-5 md:p-7 rounded-full border-4 border-background transition-all duration-500 shadow-2xl ${activePage === 'dashboard' ? 'bg-primary text-secondary scale-125' : 'bg-card text-foreground hover:scale-110'}`}>
+           {/* CENTER: DASHBOARD (LARGE FLOATING) */}
+           <div className="relative -top-8">
+              <Link href="/dashboard" className="relative flex flex-col items-center">
+                 {activePage === 'dashboard' && (
+                    <motion.div layoutId="activeGlowLarge" className="absolute -inset-8 bg-primary/30 blur-2xl rounded-full" />
+                 )}
+                 <div className={`relative z-10 p-5 rounded-full border border-white/10 transition-all duration-500 shadow-2xl ${activePage === 'dashboard' ? 'bg-primary text-secondary scale-125' : 'bg-card/80 text-foreground/40 hover:scale-110'}`}>
                     <LayoutDashboard size={28} />
                  </div>
               </Link>
            </div>
 
            {/* RIGHT: Command & Profile */}
-           <div className="flex items-center gap-2 md:gap-8">
-              <Link href="/modules/analytics" className={`flex flex-col items-center gap-1 group transition-all ${activePage === 'analytics' ? 'text-indigo-500' : 'text-foreground/40'}`}>
-                 <div className={`p-3 md:p-4 rounded-full transition-all duration-500 ${activePage === 'analytics' ? 'bg-indigo-500 text-secondary shadow-lg shadow-indigo-500/20 scale-110' : 'bg-foreground/5 hover:bg-foreground/10'}`}>
-                    <Activity size={20} />
+           <div className="flex items-center gap-4">
+              <Link href="/modules/analytics" className="relative flex flex-col items-center">
+                 {activePage === 'analytics' && (
+                    <motion.div layoutId="activeGlow" className="absolute -inset-4 bg-indigo-500/20 blur-xl rounded-full" />
+                 )}
+                 <div className={`relative z-10 p-3 rounded-2xl transition-all duration-500 ${activePage === 'analytics' ? 'text-indigo-500 scale-110' : 'text-foreground/40 hover:text-foreground'}`}>
+                    <Activity size={22} />
+                    {activePage === 'analytics' && <motion.div layoutId="activeLine" className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-1 h-1 bg-indigo-500 rounded-full" />}
                  </div>
-                 <span className="text-[8px] md:text-[10px] font-black uppercase italic tracking-widest hidden md:block">Command</span>
               </Link>
-              <Link href="/profile" className={`flex flex-col items-center gap-1 group transition-all ${activePage === 'profile' ? 'text-amber-500' : 'text-foreground/40'}`}>
-                 <div className={`p-3 md:p-4 rounded-full transition-all duration-500 ${activePage === 'profile' ? 'bg-amber-500 text-secondary shadow-lg shadow-amber-500/20 scale-110' : 'bg-foreground/5 hover:bg-foreground/10'}`}>
-                    <User size={20} />
+              <Link href="/profile" className="relative flex flex-col items-center">
+                 {activePage === 'profile' && (
+                    <motion.div layoutId="activeGlow" className="absolute -inset-4 bg-amber-500/20 blur-xl rounded-full" />
+                 )}
+                 <div className={`relative z-10 p-3 rounded-2xl transition-all duration-500 ${activePage === 'profile' ? 'text-amber-500 scale-110' : 'text-foreground/40 hover:text-foreground'}`}>
+                    <User size={22} />
+                    {activePage === 'profile' && <motion.div layoutId="activeLine" className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-1 h-1 bg-amber-500 rounded-full" />}
                  </div>
-                 <span className="text-[8px] md:text-[10px] font-black uppercase italic tracking-widest hidden md:block">Profil</span>
               </Link>
            </div>
         </nav>
