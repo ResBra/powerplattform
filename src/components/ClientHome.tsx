@@ -4,11 +4,11 @@ import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { 
+import {
   User as UserIcon,
-  ShieldCheck, 
-  Terminal, 
-  ArrowRight, 
+  ShieldCheck,
+  Terminal,
+  ArrowRight,
   Activity,
   Zap,
   Cpu,
@@ -32,7 +32,7 @@ export default function ClientHome({ settings: initialSettings }: any) {
   const [loading, setLoading] = useState(true);
   const [settings, setSettings] = useState(initialSettings);
   const router = useRouter();
-  
+
   const [metrics, setMetrics] = useState({
     cpu: 12,
     memory: 0,
@@ -147,82 +147,82 @@ export default function ClientHome({ settings: initialSettings }: any) {
 
   return (
     <div className="space-y-12 md:space-y-20 pb-20 max-w-full overflow-hidden">
-      
+
       {/* SHOWCASE HERO SECTION - LIQUID BRANDING V1.6.2 */}
       <section className="relative p-6 md:p-16 lg:p-20 bg-card border border-white/5 rounded-[2.5rem] md:rounded-[4rem] lg:rounded-[5rem] overflow-hidden shadow-2xl">
         {/* FINE-TUNE OPACITY HERE: Change 'opacity-20' to your liking (e.g., opacity-10 to opacity-50) */}
         <div className="absolute -top-20 -left-20 opacity-20 pointer-events-none -rotate-12 hidden lg:block">
-            <img src="/icon.png" alt="" className="w-[800px] h-[800px] object-contain" />
+          <img src="/icon.png" alt="" className="w-[800px] h-[800px] object-contain" />
         </div>
-        
+
         <div className="relative z-10 grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-10 md:gap-16 items-center">
           <div className="space-y-6 md:space-y-10">
             <div className="space-y-0 -mt-2">
-               <div className="flex flex-col">
-                  <span className="text-[clamp(2.5rem,10vw,7rem)] font-black italic uppercase tracking-tighter text-foreground leading-[0.85] drop-shadow-xl">
-                     Power
-                  </span>
-                  <span className="text-[clamp(2.5rem,10vw,7rem)] font-black italic uppercase tracking-tighter text-gradient leading-[0.85] mt-2 drop-shadow-xl">
-                     Plattform.
-                  </span>
-               </div>
-               <div className="pt-8">
-                  <div className="px-4 py-1.5 bg-gradient-primary opacity-20 rounded-full w-fit">
-                     <span className="text-[8px] md:text-[10px] font-black uppercase text-foreground italic tracking-[0.2em]">Service Showcase v1.6.2</span>
-                  </div>
-               </div>
+              <div className="flex flex-col">
+                <span className="text-[clamp(2.5rem,10vw,7rem)] font-black italic uppercase tracking-tighter text-foreground leading-[0.85] drop-shadow-xl">
+                  Power
+                </span>
+                <span className="text-[clamp(2.5rem,10vw,7rem)] font-black italic uppercase tracking-tighter text-gradient leading-[0.85] mt-2 drop-shadow-xl">
+                  Plattform.
+                </span>
+              </div>
+              <div className="pt-8">
+                <div className="px-4 py-1.5 bg-gradient-primary opacity-20 rounded-full w-fit">
+                  <span className="text-[8px] md:text-[10px] font-black uppercase text-foreground italic tracking-[0.2em]">Service Showcase v1.6.2</span>
+                </div>
+              </div>
             </div>
 
             <p className="text-muted text-sm md:text-xl italic font-medium leading-relaxed max-w-xl">
-               Dieses Portal dient zur Veranschaulichung unserer Programmierdienstleistungen. 
-               Wir entwickeln <span className="text-gradient font-bold italic underline decoration-primary/40 underline-offset-8">Boutique-Software</span>, die exakt deinen Anforderungen entspricht.
+              Dieses Portal dient zur Veranschaulichung unserer Programmierdienstleistungen.
+              Wir entwickeln <span className="text-gradient font-bold italic underline decoration-primary/40 underline-offset-8">Boutique-Software</span>, die exakt deinen Anforderungen entspricht.
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
-               {services.map((s) => (
-                 <div key={s.title} className="p-4 md:p-6 bg-foreground/5 border border-white/5 rounded-2xl space-y-2 md:space-y-3 hover:bg-foreground/10 transition-colors group">
-                    <div className="flex items-center gap-3">
-                       <span className="group-hover:scale-110 transition-transform duration-500">{s.icon}</span>
-                       <span className="text-[10px] md:text-xs font-black uppercase italic tracking-widest text-foreground">{s.title}</span>
-                    </div>
-                    <p className="text-[9px] md:text-[10px] text-foreground/40 font-medium italic leading-relaxed">{s.desc}</p>
-                 </div>
-               ))}
+              {services.map((s) => (
+                <div key={s.title} className="p-4 md:p-6 bg-foreground/5 border border-white/5 rounded-2xl space-y-2 md:space-y-3 hover:bg-foreground/10 transition-colors group">
+                  <div className="flex items-center gap-3">
+                    <span className="group-hover:scale-110 transition-transform duration-500">{s.icon}</span>
+                    <span className="text-[10px] md:text-xs font-black uppercase italic tracking-widest text-foreground">{s.title}</span>
+                  </div>
+                  <p className="text-[9px] md:text-[10px] text-foreground/80 font-medium italic leading-relaxed">{s.desc}</p>
+                </div>
+              ))}
             </div>
           </div>
 
           <div className="relative w-full lg:max-w-md ml-auto lg:translate-y-20 lg:translate-x-10">
-             <div className="absolute inset-0 bg-primary/10 blur-[40px] md:blur-[60px] rounded-full"></div>
-             <div className="relative glass rounded-[2.5rem] md:rounded-[3rem] p-6 md:p-10 space-y-6 md:space-y-8 shadow-2xl">
-                <div className="flex items-center gap-4 border-b border-white/5 pb-4 md:pb-6">
-                   <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-gradient-primary flex items-center justify-center text-secondary shadow-lg shadow-glow-primary">
-                      <Layers size={24} />
-                   </div>
-                   <div>
-                      <h3 className="text-lg md:text-xl font-black italic uppercase text-foreground leading-none">Core Competence</h3>
-                      <p className="text-[9px] md:text-[10px] font-black uppercase text-gradient italic tracking-widest mt-1">Our Strategy</p>
-                   </div>
+            <div className="absolute inset-0 bg-primary/10 blur-[40px] md:blur-[60px] rounded-full"></div>
+            <div className="relative glass rounded-[2.5rem] md:rounded-[3rem] p-6 md:p-10 space-y-6 md:space-y-8 shadow-2xl">
+              <div className="flex items-center gap-4 border-b border-white/5 pb-4 md:pb-6">
+                <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-gradient-primary flex items-center justify-center text-secondary shadow-lg shadow-glow-primary">
+                  <Layers size={24} />
                 </div>
-                <div className="space-y-4 md:space-y-6">
-                   <div className="flex gap-4 md:gap-6">
-                      <div className="text-gradient font-black italic text-xl md:text-2xl">01</div>
-                      <p className="text-[10px] md:text-xs text-foreground/60 italic font-medium leading-relaxed">Entwicklung individueller Softwärelösungen für komplexe Prozesse.</p>
-                   </div>
-                   <div className="flex gap-4 md:gap-6">
-                      <div className="text-gradient font-black italic text-xl md:text-2xl">02</div>
-                      <p className="text-[10px] md:text-xs text-foreground/60 italic font-medium leading-relaxed">Optimierung für PWA inkl. Offline-Support & High-Speed Performance.</p>
-                   </div>
-                   <div className="flex gap-4 md:gap-6">
-                      <div className="text-gradient font-black italic text-xl md:text-2xl">03</div>
-                      <p className="text-[10px] md:text-xs text-foreground/60 italic font-medium leading-relaxed">Integration nativer Schnittstellen und professionelles Store-Deployment.</p>
-                   </div>
+                <div>
+                  <h3 className="text-lg md:text-xl font-black italic uppercase text-foreground leading-none">Core Competence</h3>
+                  <p className="text-[9px] md:text-[10px] font-black uppercase text-gradient italic tracking-widest mt-1">Our Strategy</p>
                 </div>
-                <div className="pt-2 md:pt-4 flex justify-center">
-                   <div className="flex items-center gap-3 md:gap-4 px-4 md:px-6 py-2 md:py-3 bg-gradient-primary opacity-20 rounded-full text-[7px] md:text-[8px] font-black uppercase tracking-[0.3em] text-foreground italic text-center">
-                      <Sparkles size={12} /> Ready for Global Production
-                   </div>
+              </div>
+              <div className="space-y-4 md:space-y-6">
+                <div className="flex gap-4 md:gap-6">
+                  <div className="text-gradient font-black italic text-xl md:text-2xl">01</div>
+                  <p className="text-[10px] md:text-xs text-foreground/60 italic font-medium leading-relaxed">Entwicklung individueller Softwärelösungen für komplexe Prozesse.</p>
                 </div>
-             </div>
+                <div className="flex gap-4 md:gap-6">
+                  <div className="text-gradient font-black italic text-xl md:text-2xl">02</div>
+                  <p className="text-[10px] md:text-xs text-foreground/60 italic font-medium leading-relaxed">Optimierung für PWA inkl. Offline-Support & High-Speed Performance.</p>
+                </div>
+                <div className="flex gap-4 md:gap-6">
+                  <div className="text-gradient font-black italic text-xl md:text-2xl">03</div>
+                  <p className="text-[10px] md:text-xs text-foreground/60 italic font-medium leading-relaxed">Integration nativer Schnittstellen und professionelles Store-Deployment.</p>
+                </div>
+              </div>
+              <div className="pt-2 md:pt-4 flex justify-center">
+                <div className="flex items-center gap-3 md:gap-4 px-4 md:px-6 py-2 md:py-3 bg-gradient-primary opacity-20 rounded-full text-[7px] md:text-[8px] font-black uppercase tracking-[0.3em] text-foreground italic text-center">
+                  <Sparkles size={12} /> Ready for Global Production
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -239,22 +239,22 @@ export default function ClientHome({ settings: initialSettings }: any) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10">
           {activeModules.map((engine, idx) => (
             <Link key={engine.id} href={engine.href}>
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: idx * 0.1 }}
                 className="group relative p-8 md:p-12 bg-card border border-border rounded-[3rem] md:rounded-[4rem] shadow-sm hover:shadow-2xl hover:shadow-glow-primary transition-all duration-700 cursor-pointer overflow-hidden min-h-[350px] md:min-h-[400px] flex flex-col justify-between"
               >
-                 <div className="absolute inset-0 z-0">
-                   <img 
-                     src={engine.bgImage} 
-                     alt="" 
-                     className="w-full h-full object-cover opacity-20 md:opacity-30 group-hover:opacity-50 group-hover:scale-110 transition-all duration-1000" 
-                   />
-                   {/* GRADIENT CONTROL: 'from-card' (Light Mode: White / Dark Mode: Dark) - Adjust here for shadow/depth */}
-                   <div className={`absolute inset-0 bg-gradient-to-t from-card via-card/80 md:via-card/40 to-transparent group-hover:from-primary/20 transition-all duration-700`}></div>
+                <div className="absolute inset-0 z-0">
+                  <img
+                    src={engine.bgImage}
+                    alt=""
+                    className="w-full h-full object-cover opacity-20 md:opacity-30 group-hover:opacity-50 group-hover:scale-110 transition-all duration-1000"
+                  />
+                  {/* GRADIENT CONTROL: 'from-card' (Light Mode: White / Dark Mode: Dark) - Adjust here for shadow/depth */}
+                  <div className={`absolute inset-0 bg-gradient-to-t from-card via-card/80 md:via-card/40 to-transparent group-hover:from-primary/20 transition-all duration-700`}></div>
                 </div>
-                
+
                 <div className="relative z-10 flex flex-col h-full gap-10">
                   <div className="flex items-start justify-between">
                     <div className="p-5 md:p-6 bg-foreground/10 backdrop-blur-md rounded-3xl group-hover:scale-110 group-hover:bg-gradient-primary transition-all duration-500 group-hover:text-secondary group-hover:shadow-glow-primary">
@@ -265,12 +265,12 @@ export default function ClientHome({ settings: initialSettings }: any) {
                       <p className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-foreground/20 leading-none">{engine.metrics}</p>
                     </div>
                   </div>
-  
+
                   <div>
                     <h3 className="text-3xl md:text-5xl font-black text-foreground italic uppercase tracking-tighter mb-4 group-hover:text-gradient transition-colors leading-none">{engine.title}</h3>
                     <p className="text-foreground/40 text-xs md:text-lg font-medium italic max-w-sm leading-relaxed">{engine.desc}</p>
                   </div>
-  
+
                   <div className="mt-4 flex items-center gap-4 text-[10px] md:text-sm font-black text-foreground group-hover:gap-6 transition-all uppercase tracking-[0.2em] italic">
                     Showcase betreten <ArrowRight size={20} className="text-primary" />
                   </div>
@@ -282,34 +282,34 @@ export default function ClientHome({ settings: initialSettings }: any) {
       </section>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 pb-20 px-2 md:px-0">
-          <div className="bg-card p-4 md:p-6 rounded-2xl md:rounded-3xl border border-border flex flex-col gap-3">
-             <Cpu className="text-foreground/20" size={16} />
-             <div>
-                <p className="text-[7px] md:text-[8px] font-black uppercase text-foreground/20 italic tracking-widest">CPU Engine</p>
-                <p className="text-md md:text-lg font-black text-foreground italic tracking-tighter">{metrics.cpu}%</p>
-             </div>
+        <div className="bg-card p-4 md:p-6 rounded-2xl md:rounded-3xl border border-border flex flex-col gap-3">
+          <Cpu className="text-foreground/20" size={16} />
+          <div>
+            <p className="text-[7px] md:text-[8px] font-black uppercase text-foreground/20 italic tracking-widest">CPU Engine</p>
+            <p className="text-md md:text-lg font-black text-foreground italic tracking-tighter">{metrics.cpu}%</p>
           </div>
-          <div className="bg-card p-4 md:p-6 rounded-2xl md:rounded-3xl border border-border flex flex-col gap-3">
-             <Database className="text-foreground/20" size={16} />
-             <div>
-                <p className="text-[7px] md:text-[8px] font-black uppercase text-foreground/20 italic tracking-widest">Memory</p>
-                <p className="text-md md:text-lg font-black text-foreground italic tracking-tighter">{metrics.memory} MB</p>
-             </div>
+        </div>
+        <div className="bg-card p-4 md:p-6 rounded-2xl md:rounded-3xl border border-border flex flex-col gap-3">
+          <Database className="text-foreground/20" size={16} />
+          <div>
+            <p className="text-[7px] md:text-[8px] font-black uppercase text-foreground/20 italic tracking-widest">Memory</p>
+            <p className="text-md md:text-lg font-black text-foreground italic tracking-tighter">{metrics.memory} MB</p>
           </div>
-          <div className="bg-card p-4 md:p-6 rounded-2xl md:rounded-3xl border border-border flex flex-col gap-3">
-             <Zap className="text-foreground/20" size={16} />
-             <div>
-                <p className="text-[7px] md:text-[8px] font-black uppercase text-foreground/20 italic tracking-widest">Session</p>
-                <p className="text-md md:text-lg font-black text-foreground italic tracking-tighter tabular-nums">{metrics.uptime}</p>
-             </div>
+        </div>
+        <div className="bg-card p-4 md:p-6 rounded-2xl md:rounded-3xl border border-border flex flex-col gap-3">
+          <Zap className="text-foreground/20" size={16} />
+          <div>
+            <p className="text-[7px] md:text-[8px] font-black uppercase text-foreground/20 italic tracking-widest">Session</p>
+            <p className="text-md md:text-lg font-black text-foreground italic tracking-tighter tabular-nums">{metrics.uptime}</p>
           </div>
-          <div className="bg-card p-4 md:p-6 rounded-2xl md:rounded-3xl border border-border flex flex-col gap-3">
-             <Activity className="text-foreground/20" size={16} />
-             <div>
-                <p className="text-[7px] md:text-[8px] font-black uppercase text-foreground/20 italic tracking-widest">Network</p>
-                <p className="text-md md:text-lg font-black italic tracking-tighter text-gradient">AUTHORIZED</p>
-             </div>
+        </div>
+        <div className="bg-card p-4 md:p-6 rounded-2xl md:rounded-3xl border border-border flex flex-col gap-3">
+          <Activity className="text-foreground/20" size={16} />
+          <div>
+            <p className="text-[7px] md:text-[8px] font-black uppercase text-foreground/20 italic tracking-widest">Network</p>
+            <p className="text-md md:text-lg font-black italic tracking-tighter text-gradient">AUTHORIZED</p>
           </div>
+        </div>
       </div>
     </div>
   );

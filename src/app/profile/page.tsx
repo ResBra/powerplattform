@@ -16,12 +16,32 @@ import {
   Zap,
   Globe,
   Settings,
-  ChevronRight
+  ChevronRight,
+  X,
+  Edit3,
+  Key,
+  Trash2,
+  CheckCircle2,
+  AlertTriangle
 } from "lucide-react";
+import { 
+  updateProfile, 
+  updatePassword, 
+  deleteUser, 
+  reauthenticateWithCredential, 
+  EmailAuthProvider 
+} from "firebase/auth";
+import { AnimatePresence } from "framer-motion";
 
 export default function ProfilePage() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [status, setStatus] = useState<{ type: 'success' | 'error', msg: string } | null>(null);
+  const [isUpdating, setIsUpdating] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -30,6 +50,7 @@ export default function ProfilePage() {
         router.push("/");
       } else {
         setUser(currentUser);
+        setNewName(currentUser.displayName || "");
       }
       setLoading(false);
     });
@@ -43,6 +64,53 @@ export default function ProfilePage() {
     } catch (error) {
       console.error("Logout Error:", error);
     }
+  };
+
+  const handleUpdateProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+    setIsUpdating(true);
+    setStatus(null);
+    try {
+      await updateProfile(user, { displayName: newName });
+      setStatus({ type: 'success', msg: "Profil erfolgreich aktualisiert!" });
+    } catch (error: any) {
+      setStatus({ type: 'error', msg: error.message });
+    }
+    setIsUpdating(false);
+  };
+
+  const handleUpdatePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user || !currentPassword || !newPassword) return;
+    setIsUpdating(true);
+    setStatus(null);
+    try {
+      const credential = EmailAuthProvider.credential(user.email!, currentPassword);
+      await reauthenticateWithCredential(user, credential);
+      await updatePassword(user, newPassword);
+      setStatus({ type: 'success', msg: "Passwort erfolgreich geändert!" });
+      setNewPassword("");
+      setCurrentPassword("");
+    } catch (error: any) {
+      setStatus({ type: 'error', msg: "Re-Authentifizierung fehlgeschlagen oder Passwort zu schwach." });
+    }
+    setIsUpdating(false);
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!user) return;
+    const confirm = window.confirm("Bist du absolut sicher? Dein Account wird unwiderruflich gelöscht.");
+    if (!confirm) return;
+    
+    setIsUpdating(true);
+    try {
+      await deleteUser(user);
+      router.push("/");
+    } catch (error: any) {
+      alert("Bitte logge dich erneut ein, um deinen Account zu löschen (Sicherheitsmaßnahme).");
+    }
+    setIsUpdating(false);
   };
 
   if (loading) return (
@@ -169,28 +237,141 @@ export default function ProfilePage() {
         </div>
 
         {/* SECURITY & ACTION ZONE */}
-        <section className="bg-card border border-border rounded-[3rem] p-12 relative overflow-hidden group">
-           <div className="absolute top-[-20%] right-[-10%] w-[40%] h-[120%] bg-red-500/5 blur-[80px] rounded-full group-hover:scale-125 transition-transform duration-1000"></div>
-           <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-12">
+        <section className="bg-card border border-border rounded-[3rem] p-8 md:p-12 relative overflow-hidden group">
+           <div className="absolute top-[-20%] right-[-10%] w-[40%] h-[120%] bg-primary/5 blur-[80px] rounded-full group-hover:scale-125 transition-transform duration-1000"></div>
+           <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8 md:gap-12">
               <div className="space-y-4 text-center md:text-left">
-                 <h2 className="text-3xl font-black text-foreground italic uppercase tracking-tighter leading-tight">Gefahrenzone & <br /><span className="text-red-500">System-Reset.</span></h2>
+                 <h2 className="text-3xl font-black text-foreground italic uppercase tracking-tighter leading-tight">Identity & <br /><span className="text-gradient">Control.</span></h2>
                  <p className="text-xs text-foreground/40 italic font-medium max-w-sm">
-                   Hier kannst du dich sicher vom System abmelden. Alle lokalen Cache-Daten werden dabei gelöscht und deine Session beendet.
+                   Verwalte deine persönlichen Daten, ändere dein Passwort oder lösche dein System-Profil dauerhaft aus der PowerNode-Infrastruktur.
                  </p>
               </div>
-              <div className="flex gap-4">
-                 <button className="px-8 py-4 bg-foreground/5 border border-border text-foreground font-black italic uppercase rounded-2xl tracking-widest text-sm hover:bg-foreground/10 transition-all flex items-center gap-3">
+              <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
+                 <button 
+                  onClick={() => setIsSettingsOpen(true)}
+                  className="w-full sm:w-auto px-8 py-4 bg-foreground/5 border border-border text-foreground font-black italic uppercase rounded-2xl tracking-widest text-sm hover:bg-foreground/10 transition-all flex items-center justify-center gap-3"
+                 >
                     <Settings size={18} /> Settings
                  </button>
                  <button 
                   onClick={handleLogout}
-                  className="px-8 py-4 bg-red-500 text-white font-black italic uppercase rounded-2xl tracking-widest text-sm hover:scale-105 transition-all shadow-xl shadow-red-500/20 flex items-center gap-3"
+                  className="w-full sm:w-auto px-8 py-4 bg-gradient-primary text-secondary font-black italic uppercase rounded-2xl tracking-widest text-sm hover:scale-105 transition-all shadow-xl shadow-glow-primary flex items-center justify-center gap-3"
                  >
                     <LogOut size={18} /> Logout
                  </button>
               </div>
            </div>
         </section>
+
+        {/* SETTINGS MODAL */}
+        <AnimatePresence>
+           {isSettingsOpen && (
+              <div className="fixed inset-0 z-[600] flex items-center justify-center p-4">
+                 <motion.div 
+                  initial={{ opacity: 0 }} 
+                  animate={{ opacity: 1 }} 
+                  exit={{ opacity: 0 }} 
+                  onClick={() => setIsSettingsOpen(false)} 
+                  className="absolute inset-0 bg-black/60 backdrop-blur-md" 
+                 />
+                 <motion.div 
+                  initial={{ opacity: 0, scale: 0.9, y: 20 }} 
+                  animate={{ opacity: 1, scale: 1, y: 0 }} 
+                  exit={{ opacity: 0, scale: 0.9, y: 20 }} 
+                  className="relative w-full max-w-2xl bg-card border border-border rounded-[3rem] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+                 >
+                    <div className="p-8 border-b border-border flex items-center justify-between bg-foreground/[0.02]">
+                       <div className="flex items-center gap-4">
+                          <div className="p-3 bg-gradient-primary rounded-2xl text-secondary"><Settings size={24} /></div>
+                          <h2 className="text-2xl font-black italic uppercase tracking-tighter">Profile <span className="text-gradient">Settings.</span></h2>
+                       </div>
+                       <button onClick={() => setIsSettingsOpen(false)} className="p-3 hover:bg-foreground/5 rounded-full transition-colors"><X size={20} /></button>
+                    </div>
+
+                    <div className="p-8 space-y-10 overflow-y-auto">
+                       {status && (
+                          <motion.div 
+                            initial={{ opacity: 0, y: -10 }} 
+                            animate={{ opacity: 1, y: 0 }} 
+                            className={`p-4 rounded-2xl flex items-center gap-3 font-bold italic text-xs uppercase ${status.type === 'success' ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'}`}
+                          >
+                             {status.type === 'success' ? <CheckCircle2 size={16} /> : <AlertTriangle size={16} />}
+                             {status.msg}
+                          </motion.div>
+                       )}
+
+                       {/* 1. DISPLAY NAME */}
+                       <div className="space-y-4">
+                          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-foreground/40 italic flex items-center gap-2"><Edit3 size={10} /> Identity Mapping</p>
+                          <form onSubmit={handleUpdateProfile} className="flex gap-4">
+                             <input 
+                              type="text" 
+                              value={newName} 
+                              onChange={(e) => setNewName(e.target.value)}
+                              placeholder="Neuer Anzeigename"
+                              className="flex-1 bg-foreground/5 border border-border rounded-2xl px-6 py-4 font-bold italic text-sm outline-none focus:border-primary/50 transition-all"
+                             />
+                             <button 
+                              disabled={isUpdating}
+                              className="px-6 py-4 bg-gradient-primary text-secondary font-black italic uppercase rounded-2xl text-xs hover:scale-105 transition-all disabled:opacity-50"
+                             >
+                                Update
+                             </button>
+                          </form>
+                       </div>
+
+                       {/* 2. PASSWORD CHANGE (Only for Email users) */}
+                       {user?.providerData[0]?.providerId === 'password' && (
+                          <div className="space-y-4 pt-6 border-t border-border">
+                             <p className="text-[10px] font-black uppercase tracking-[0.3em] text-foreground/40 italic flex items-center gap-2"><Key size={10} /> Access Security</p>
+                             <form onSubmit={handleUpdatePassword} className="space-y-4">
+                                <input 
+                                 type="password" 
+                                 value={currentPassword} 
+                                 onChange={(e) => setCurrentPassword(e.target.value)}
+                                 placeholder="Aktuelles Passwort"
+                                 className="w-full bg-foreground/5 border border-border rounded-2xl px-6 py-4 font-bold italic text-sm outline-none focus:border-primary/50 transition-all"
+                                />
+                                <div className="flex gap-4">
+                                   <input 
+                                    type="password" 
+                                    value={newPassword} 
+                                    onChange={(e) => setNewPassword(e.target.value)}
+                                    placeholder="Neues Passwort"
+                                    className="flex-1 bg-foreground/5 border border-border rounded-2xl px-6 py-4 font-bold italic text-sm outline-none focus:border-primary/50 transition-all"
+                                   />
+                                   <button 
+                                    disabled={isUpdating}
+                                    className="px-6 py-4 bg-foreground/5 border border-border text-foreground font-black italic uppercase rounded-2xl text-xs hover:bg-foreground/10 transition-all disabled:opacity-50"
+                                   >
+                                      Change
+                                   </button>
+                                </div>
+                             </form>
+                          </div>
+                       )}
+
+                       {/* 3. DANGER ZONE */}
+                       <div className="space-y-4 pt-10 border-t border-border">
+                          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-red-500/60 italic flex items-center gap-2"><Trash2 size={10} /> Danger Zone</p>
+                          <div className="p-8 bg-red-500/5 border border-red-500/20 rounded-[2rem] space-y-6">
+                             <div className="space-y-1">
+                                <h4 className="text-sm font-black italic uppercase text-red-500">System-Account löschen</h4>
+                                <p className="text-[10px] text-foreground/40 italic font-medium">Dies wird all deine Daten, Verknüpfungen und Zugänge dauerhaft entfernen. Dieser Schritt kann nicht rückgängig gemacht werden.</p>
+                             </div>
+                             <button 
+                              onClick={handleDeleteAccount}
+                              className="w-full py-4 bg-red-500 text-white font-black italic uppercase rounded-xl text-xs hover:bg-red-600 transition-all flex items-center justify-center gap-3 shadow-lg shadow-red-500/10"
+                             >
+                                <Trash2 size={16} /> Account unwiderruflich löschen
+                             </button>
+                          </div>
+                       </div>
+                    </div>
+                 </motion.div>
+              </div>
+           )}
+        </AnimatePresence>
 
         {/* WATERMARK */}
         <div className="text-center opacity-10">
