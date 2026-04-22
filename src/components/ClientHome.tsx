@@ -150,11 +150,11 @@ export default function ClientHome({ settings: initialSettings }: any) {
       
       {/* SHOWCASE HERO SECTION - LIQUID BRANDING V1.6.2 */}
       <section className="relative p-6 md:p-16 lg:p-20 bg-card border border-white/5 rounded-[2.5rem] md:rounded-[4rem] lg:rounded-[5rem] overflow-hidden shadow-2xl">
-        <div className="absolute -top-20 -right-20 opacity-[0.03] pointer-events-none -rotate-12 hidden lg:block">
+        <div className="absolute -top-20 -right-20 opacity-10 pointer-events-none -rotate-12 hidden lg:block">
             <img src="/icon.png" alt="" className="w-[800px] h-[800px] object-contain" />
         </div>
         
-        <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-10 md:gap-16 items-center">
+        <div className="relative z-10 grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-10 md:gap-16 items-center">
           <div className="space-y-6 md:space-y-10">
             <div className="space-y-0 -mt-2">
                <div className="flex flex-col">
