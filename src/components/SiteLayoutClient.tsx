@@ -226,29 +226,53 @@ export default function SiteLayoutClient({ children, activePage, settings }: Sit
 
       {/* MAIN CONTENT AREA */}
       <div className="flex-1 flex flex-col min-w-0 relative">
-        <main className="flex-1 p-6 md:p-12 lg:p-16 pt-28 lg:pt-16 max-w-[1400px] mx-auto w-full">
+        <main className="flex-1 p-6 md:p-12 lg:p-16 pt-28 lg:pt-16 pb-32 max-w-[1400px] mx-auto w-full">
           {children}
         </main>
         
-        {/* GLOBAL FOOTER */}
-        <footer className="p-10 border-t border-border bg-card shadow-[0_-15px_50px_rgba(0,0,0,0.1)] mt-auto relative z-10">
-           <div className="max-w-[1400px] mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
-              <div className="flex items-center gap-4">
-                 <img src="/icon.png" alt="" className="w-8 h-8 opacity-40" />
-                 <p className="text-[10px] font-black uppercase text-foreground italic tracking-[0.4em]">© 2026 PowerPlattform Digital</p>
-              </div>
-              
-              <div className="flex items-center gap-10">
-                 <Link href="/legal/impressum" className="text-[10px] font-black uppercase text-foreground italic hover:text-primary transition-colors tracking-widest">Impressum</Link>
-                 <Link href="/legal/datenschutz" className="text-[10px] font-black uppercase text-foreground italic hover:text-primary transition-colors tracking-widest">Datenschutz</Link>
-              </div>
-
-              <div className="flex items-center gap-3 px-4 py-2 bg-foreground/5 rounded-full border border-border">
-                 <div className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse"></div>
-                 <span className="text-[8px] font-black uppercase text-foreground italic tracking-widest">Node Status: Optimized</span>
-              </div>
+        {/* APP-STYLE BOTTOM NAVIGATION (YouTube Style) */}
+        <nav className="fixed bottom-0 inset-x-0 h-24 bg-card/80 backdrop-blur-2xl border-t border-border z-[200] px-4 md:px-10 flex items-center justify-around shadow-[0_-10px_40px_rgba(0,0,0,0.2)]">
+           {/* LEFT: Market & Qloud */}
+           <div className="flex items-center gap-2 md:gap-8">
+              <Link href="/modules/market" className={`flex flex-col items-center gap-1 group transition-all ${activePage === 'market' ? 'text-primary' : 'text-foreground/40'}`}>
+                 <div className={`p-3 md:p-4 rounded-full transition-all duration-500 ${activePage === 'market' ? 'bg-primary text-secondary shadow-lg shadow-primary/20 scale-110' : 'bg-foreground/5 hover:bg-foreground/10'}`}>
+                    <ShoppingBag size={20} className="md:size-24" />
+                 </div>
+                 <span className="text-[8px] md:text-[10px] font-black uppercase italic tracking-widest hidden md:block">Market</span>
+              </Link>
+              <Link href="/modules/qloud" className={`flex flex-col items-center gap-1 group transition-all ${activePage === 'qloud' ? 'text-blue-500' : 'text-foreground/40'}`}>
+                 <div className={`p-3 md:p-4 rounded-full transition-all duration-500 ${activePage === 'qloud' ? 'bg-blue-500 text-secondary shadow-lg shadow-blue-500/20 scale-110' : 'bg-foreground/5 hover:bg-foreground/10'}`}>
+                    <Box size={20} className="md:size-24" />
+                 </div>
+                 <span className="text-[8px] md:text-[10px] font-black uppercase italic tracking-widest hidden md:block">Qloud Hub</span>
+              </Link>
            </div>
-        </footer>
+
+           {/* CENTER: DASHBOARD (LARGE) */}
+           <div className="relative -top-6">
+              <Link href="/dashboard" className={`flex flex-col items-center gap-1 group transition-all ${activePage === 'dashboard' ? 'text-primary' : 'text-foreground/40'}`}>
+                 <div className={`p-5 md:p-7 rounded-full border-4 border-background transition-all duration-500 shadow-2xl ${activePage === 'dashboard' ? 'bg-primary text-secondary scale-125' : 'bg-card text-foreground hover:scale-110'}`}>
+                    <LayoutDashboard size={28} className="md:size-32" />
+                 </div>
+              </Link>
+           </div>
+
+           {/* RIGHT: Command & Profile */}
+           <div className="flex items-center gap-2 md:gap-8">
+              <Link href="/modules/analytics" className={`flex flex-col items-center gap-1 group transition-all ${activePage === 'analytics' ? 'text-indigo-500' : 'text-foreground/40'}`}>
+                 <div className={`p-3 md:p-4 rounded-full transition-all duration-500 ${activePage === 'analytics' ? 'bg-indigo-500 text-secondary shadow-lg shadow-indigo-500/20 scale-110' : 'bg-foreground/5 hover:bg-foreground/10'}`}>
+                    <Activity size={20} className="md:size-24" />
+                 </div>
+                 <span className="text-[8px] md:text-[10px] font-black uppercase italic tracking-widest hidden md:block">Command</span>
+              </Link>
+              <Link href="/profile" className={`flex flex-col items-center gap-1 group transition-all ${activePage === 'profile' ? 'text-amber-500' : 'text-foreground/40'}`}>
+                 <div className={`p-3 md:p-4 rounded-full transition-all duration-500 ${activePage === 'profile' ? 'bg-amber-500 text-secondary shadow-lg shadow-amber-500/20 scale-110' : 'bg-foreground/5 hover:bg-foreground/10'}`}>
+                    <User size={20} className="md:size-24" />
+                 </div>
+                 <span className="text-[8px] md:text-[10px] font-black uppercase italic tracking-widest hidden md:block">Profil</span>
+              </Link>
+           </div>
+        </nav>
       </div>
 
       {/* SETTINGS POPUP MODAL (RESTORED) */}
