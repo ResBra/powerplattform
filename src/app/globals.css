@@ -8,15 +8,19 @@
   --color-foreground: var(--foreground);
   --color-card: var(--card);
   --color-border: var(--border-color);
+  --color-muted: var(--text-muted);
+  --color-dim: var(--text-dim);
 }
 
 :root {
   --background: #f1f5f9; 
-  --foreground: #0f172a; 
+  --foreground: #020617; 
   --card: #ffffff;
   --border-color: #e2e8f0;
   --primary-1: #2eb64a;
   --primary-2: #4ade80;
+  --text-muted: rgba(2, 6, 23, 0.7);
+  --text-dim: rgba(2, 6, 23, 0.5);
   --bg-opacity: 0;
   --bg-image: none;
 }
@@ -26,6 +30,8 @@
   --foreground: #f8fafc;
   --card: #0c141d;
   --border-color: rgba(255,255,255,0.05);
+  --text-muted: rgba(248, 250, 252, 0.4);
+  --text-dim: rgba(248, 250, 252, 0.2);
 }
 
 @layer base {

@@ -147,7 +147,7 @@ export default function ClientHome({ settings: initialSettings }: any) {
                </div>
             </div>
 
-            <p className="text-foreground/70 text-sm md:text-xl italic font-medium leading-relaxed max-w-xl">
+            <p className="text-muted text-sm md:text-xl italic font-medium leading-relaxed max-w-xl">
                Dieses Portal dient zur Veranschaulichung unserer Programmierdienstleistungen. 
                Wir entwickeln <span className="text-primary font-bold italic underline decoration-primary/40 underline-offset-8">Boutique-Software</span>, die exakt deinen Anforderungen entspricht.
             </p>

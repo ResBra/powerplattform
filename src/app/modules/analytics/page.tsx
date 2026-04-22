@@ -101,13 +101,13 @@ export default function AnalyticsPage() {
                       Command <span className="text-primary">Center.</span>
                    </h1>
                 </div>
-                <p className="text-[10px] md:text-xs font-black uppercase text-foreground/40 italic tracking-[0.4em] ml-1">Universal Platform Intelligence • Live Stream v4.2</p>
+                <p className="text-[10px] md:text-xs font-black uppercase text-muted italic tracking-[0.4em] ml-1">Universal Platform Intelligence • Live Stream v4.2</p>
              </div>
              
              <div className="flex items-center gap-4 bg-foreground/5 p-4 rounded-2xl border border-white/5">
                 <div className="w-3 h-3 bg-primary rounded-full animate-ping"></div>
                 <div className="text-right">
-                   <p className="text-[8px] font-black uppercase text-foreground/30 italic">Server Location</p>
+                   <p className="text-[8px] font-black uppercase text-dim italic">Server Location</p>
                    <p className="text-[10px] font-black italic text-foreground uppercase tracking-widest flex items-center gap-2">Berlin / Node-01 <Globe size={10} /></p>
                 </div>
              </div>
