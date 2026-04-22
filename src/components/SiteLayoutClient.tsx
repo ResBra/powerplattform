@@ -231,21 +231,21 @@ export default function SiteLayoutClient({ children, activePage, settings }: Sit
         </main>
         
         {/* GLOBAL FOOTER */}
-        <footer className="p-10 border-t border-white/5 bg-foreground/[0.02] mt-auto">
+        <footer className="p-10 border-t border-border bg-card shadow-[0_-15px_50px_rgba(0,0,0,0.1)] mt-auto relative z-10">
            <div className="max-w-[1400px] mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
               <div className="flex items-center gap-4">
-                 <img src="/icon.png" alt="" className="w-8 h-8 opacity-20" />
-                 <p className="text-[10px] font-black uppercase text-foreground/20 italic tracking-[0.4em]">© 2026 PowerPlattform Digital</p>
+                 <img src="/icon.png" alt="" className="w-8 h-8 opacity-40" />
+                 <p className="text-[10px] font-black uppercase text-foreground italic tracking-[0.4em]">© 2026 PowerPlattform Digital</p>
               </div>
               
               <div className="flex items-center gap-10">
-                 <Link href="/legal/impressum" className="text-[10px] font-black uppercase text-foreground/40 italic hover:text-primary transition-colors tracking-widest">Impressum</Link>
-                 <Link href="/legal/datenschutz" className="text-[10px] font-black uppercase text-foreground/40 italic hover:text-primary transition-colors tracking-widest">Datenschutz</Link>
+                 <Link href="/legal/impressum" className="text-[10px] font-black uppercase text-foreground italic hover:text-primary transition-colors tracking-widest">Impressum</Link>
+                 <Link href="/legal/datenschutz" className="text-[10px] font-black uppercase text-foreground italic hover:text-primary transition-colors tracking-widest">Datenschutz</Link>
               </div>
 
-              <div className="flex items-center gap-3 px-4 py-2 bg-foreground/5 rounded-full">
+              <div className="flex items-center gap-3 px-4 py-2 bg-foreground/5 rounded-full border border-border">
                  <div className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse"></div>
-                 <span className="text-[8px] font-black uppercase text-foreground/40 italic tracking-widest">Node Status: Optimized</span>
+                 <span className="text-[8px] font-black uppercase text-foreground italic tracking-widest">Node Status: Optimized</span>
               </div>
            </div>
         </footer>
