@@ -110,7 +110,7 @@ export default function ClientHome({ settings: initialSettings }: any) {
       icon: <UserIcon className="text-amber-500" size={32} />,
       status: "Verified",
       metrics: "Identity Core",
-      href: "/modules/profile",
+      href: "/profile",
       bgImage: "/images/showcase/profile_bg.png",
       color: "from-amber-500/10"
     },
@@ -121,7 +121,7 @@ export default function ClientHome({ settings: initialSettings }: any) {
       icon: <Terminal className="text-indigo-500" size={32} />,
       status: "Active",
       metrics: "Root Access",
-      href: "/modules/command",
+      href: "/modules/analytics",
       bgImage: "/images/showcase/command_bg.png",
       color: "from-indigo-500/10"
     }
