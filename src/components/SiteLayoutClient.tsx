@@ -38,6 +38,7 @@ export default function SiteLayoutClient({ children, activePage, settings }: Sit
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [theme, setTheme] = useState<"dark" | "light">("dark");
   const [mounted, setMounted] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const router = useRouter();
 
   // THEME & CUSTOMIZATION STATE
@@ -50,6 +51,11 @@ export default function SiteLayoutClient({ children, activePage, settings }: Sit
 
   useEffect(() => {
     setMounted(true);
+    
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
+    window.addEventListener("scroll", handleScroll);
     
     // 1. AUTH OBSERVER (Universal for Web & Mobile)
     if (!auth) {
@@ -110,6 +116,7 @@ export default function SiteLayoutClient({ children, activePage, settings }: Sit
     return () => {
        unsubscribe();
        clearTimeout(deadlockTimer);
+       window.removeEventListener("scroll", handleScroll);
     };
   }, [router]);
 
@@ -187,62 +194,39 @@ export default function SiteLayoutClient({ children, activePage, settings }: Sit
         </div>
       </motion.aside>
 
-      {/* MOBILE HEADER */}
-      <header className="lg:hidden h-20 bg-black fixed top-0 inset-x-0 z-[110] flex items-center justify-between px-6 border-b border-white/5 shadow-xl">
-          <Link href="/dashboard" className="font-black italic uppercase tracking-tighter text-lg flex items-center gap-3 text-white">
+      {/* MOBILE HEADER (SHRINK ON SCROLL) */}
+      <header className={`lg:hidden fixed top-0 inset-x-0 z-[110] flex items-center justify-between px-6 border-b border-white/5 shadow-xl transition-all duration-500 ${isScrolled ? 'h-14 bg-black/80 backdrop-blur-md' : 'h-24 bg-black'}`}>
+          <Link href="/dashboard" className={`flex items-center gap-3 text-white transition-all duration-500 ${isScrolled ? 'scale-75' : 'scale-100'}`}>
              <img src="/icon.png" alt="PowerNode" className="w-9 h-9 object-contain" />
-             <span>Power<span className="text-primary">Node.</span></span>
+             <span className="font-black italic uppercase tracking-tighter text-lg">Power<span className="text-primary">Node.</span></span>
           </Link>
-         <div className="flex gap-2 text-white">
-            <button onClick={() => setIsSettingsOpen(true)} className="p-3 bg-white/10 rounded-2xl text-white/70 hover:bg-white/20 transition-all"><Settings size={20} /></button>
-            <button onClick={() => setIsOpen(true)} className="p-3 bg-white/20 rounded-2xl text-white hover:bg-white/30 transition-all"><Menu size={24} /></button>
-         </div>
+          <button 
+            onClick={() => setIsSettingsOpen(true)} 
+            className={`bg-white/10 rounded-2xl text-white/70 hover:bg-white/20 transition-all duration-500 ${isScrolled ? 'p-2 scale-75' : 'p-3 scale-100'}`}
+          >
+            <Settings size={20} />
+          </button>
       </header>
-
-      {/* MOBILE DRAWER */}
-      <AnimatePresence>
-        {isOpen && (
-          <div className="lg:hidden fixed inset-0 z-[500]">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsOpen(false)} className="absolute inset-0 bg-black/60 backdrop-blur-md" />
-            <motion.aside initial={{ x: "-100%" }} animate={{ x: 0 }} exit={{ x: "-100%" }} className="absolute top-0 left-0 h-screen w-[300px] bg-card border-r border-border p-8 flex flex-col shadow-2xl">
-              {/* Mobile items same as desktop links */}
-              <div className="flex items-center justify-between mb-12">
-                 <div className="font-black italic uppercase tracking-tighter text-xl">Power<span className="text-primary">Node.</span></div>
-                 <button onClick={() => setIsOpen(false)} className="p-3 bg-foreground/5 rounded-2xl"><X size={24} /></button>
-              </div>
-              <nav className="flex-1 space-y-4">
-                 {navItems.map(item => (
-                    <Link key={item.id} href={item.href} onClick={() => setIsOpen(false)} className="flex items-center gap-5 p-5 bg-foreground/5 rounded-[1.5rem] font-bold uppercase text-xs italic">{item.icon} {item.label}</Link>
-                 ))}
-              </nav>
-              <div className="pt-6 border-t border-border space-y-4">
-                 <button onClick={() => { setIsSettingsOpen(true); setIsOpen(false); }} className="w-full flex items-center gap-5 p-5 bg-foreground/5 rounded-[1.5rem] text-xs font-black uppercase italic"><Settings size={20} /> Settings</button>
-                 <button onClick={() => { signOut(auth); router.push("/"); }} className="w-full flex items-center gap-5 p-5 bg-red-500/10 text-red-500 rounded-[1.5rem] text-xs font-black uppercase italic"><LogOut size={20} /> Logout</button>
-              </div>
-            </motion.aside>
-          </div>
-        )}
-      </AnimatePresence>
 
       {/* MAIN CONTENT AREA */}
       <div className="flex-1 flex flex-col min-w-0 relative">
-        <main className="flex-1 p-6 md:p-12 lg:p-16 pt-28 lg:pt-16 pb-32 max-w-[1400px] mx-auto w-full">
+        <main className="flex-1 p-6 md:p-12 lg:p-16 pt-32 lg:pt-16 pb-32 lg:pb-16 max-w-[1400px] mx-auto w-full">
           {children}
         </main>
         
-        {/* APP-STYLE BOTTOM NAVIGATION (YouTube Style) */}
-        <nav className="fixed bottom-0 inset-x-0 h-24 bg-card/80 backdrop-blur-2xl border-t border-border z-[200] px-4 md:px-10 flex items-center justify-around shadow-[0_-10px_40px_rgba(0,0,0,0.2)]">
+        {/* APP-STYLE BOTTOM NAVIGATION (Mobile Only) */}
+        <nav className="lg:hidden fixed bottom-0 inset-x-0 h-24 bg-card/80 backdrop-blur-2xl border-t border-border z-[200] px-4 md:px-10 flex items-center justify-around shadow-[0_-10px_40px_rgba(0,0,0,0.2)]">
            {/* LEFT: Market & Qloud */}
            <div className="flex items-center gap-2 md:gap-8">
               <Link href="/modules/market" className={`flex flex-col items-center gap-1 group transition-all ${activePage === 'market' ? 'text-primary' : 'text-foreground/40'}`}>
                  <div className={`p-3 md:p-4 rounded-full transition-all duration-500 ${activePage === 'market' ? 'bg-primary text-secondary shadow-lg shadow-primary/20 scale-110' : 'bg-foreground/5 hover:bg-foreground/10'}`}>
-                    <ShoppingBag size={20} className="md:size-24" />
+                    <ShoppingBag size={20} />
                  </div>
                  <span className="text-[8px] md:text-[10px] font-black uppercase italic tracking-widest hidden md:block">Market</span>
               </Link>
               <Link href="/modules/qloud" className={`flex flex-col items-center gap-1 group transition-all ${activePage === 'qloud' ? 'text-blue-500' : 'text-foreground/40'}`}>
                  <div className={`p-3 md:p-4 rounded-full transition-all duration-500 ${activePage === 'qloud' ? 'bg-blue-500 text-secondary shadow-lg shadow-blue-500/20 scale-110' : 'bg-foreground/5 hover:bg-foreground/10'}`}>
-                    <Box size={20} className="md:size-24" />
+                    <Box size={20} />
                  </div>
                  <span className="text-[8px] md:text-[10px] font-black uppercase italic tracking-widest hidden md:block">Qloud Hub</span>
               </Link>
@@ -252,7 +236,7 @@ export default function SiteLayoutClient({ children, activePage, settings }: Sit
            <div className="relative -top-6">
               <Link href="/dashboard" className={`flex flex-col items-center gap-1 group transition-all ${activePage === 'dashboard' ? 'text-primary' : 'text-foreground/40'}`}>
                  <div className={`p-5 md:p-7 rounded-full border-4 border-background transition-all duration-500 shadow-2xl ${activePage === 'dashboard' ? 'bg-primary text-secondary scale-125' : 'bg-card text-foreground hover:scale-110'}`}>
-                    <LayoutDashboard size={28} className="md:size-32" />
+                    <LayoutDashboard size={28} />
                  </div>
               </Link>
            </div>
@@ -261,13 +245,13 @@ export default function SiteLayoutClient({ children, activePage, settings }: Sit
            <div className="flex items-center gap-2 md:gap-8">
               <Link href="/modules/analytics" className={`flex flex-col items-center gap-1 group transition-all ${activePage === 'analytics' ? 'text-indigo-500' : 'text-foreground/40'}`}>
                  <div className={`p-3 md:p-4 rounded-full transition-all duration-500 ${activePage === 'analytics' ? 'bg-indigo-500 text-secondary shadow-lg shadow-indigo-500/20 scale-110' : 'bg-foreground/5 hover:bg-foreground/10'}`}>
-                    <Activity size={20} className="md:size-24" />
+                    <Activity size={20} />
                  </div>
                  <span className="text-[8px] md:text-[10px] font-black uppercase italic tracking-widest hidden md:block">Command</span>
               </Link>
               <Link href="/profile" className={`flex flex-col items-center gap-1 group transition-all ${activePage === 'profile' ? 'text-amber-500' : 'text-foreground/40'}`}>
                  <div className={`p-3 md:p-4 rounded-full transition-all duration-500 ${activePage === 'profile' ? 'bg-amber-500 text-secondary shadow-lg shadow-amber-500/20 scale-110' : 'bg-foreground/5 hover:bg-foreground/10'}`}>
-                    <User size={20} className="md:size-24" />
+                    <User size={20} />
                  </div>
                  <span className="text-[8px] md:text-[10px] font-black uppercase italic tracking-widest hidden md:block">Profil</span>
               </Link>
