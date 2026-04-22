@@ -44,6 +44,8 @@ export async function createListingAction(data: MarketListing) {
 }
 
 // 🔍 ANGEBOTE LADEN (Mit Filtern)
+// HINWEIS: Bei Verwendung von Filtern (Kategorie) + orderBy (createdAt) ist ein zusammengesetzter Index erforderlich.
+// Link zum Erstellen: https://console.firebase.google.com/v1/r/project/powerautomate-3afbd/firestore/indexes?create_composite=Cltwcm9qZWN0cy9wb3dlcmF1dG9tYXRlLTNhZmJkL2RhdGFiYXNlcy8oZGVmYXVsdCkvY29sbGVjdGlvbkdyb3Vwcy9tYXJrZXRfbGlzdGluZ3MvaW5kZXhlcy9fEAEaDAoIY2F0ZWdvcnkQARoNCgljcmVhdGVkQXQQAhoMCghfX25hbWVfXxAC
 export async function getListingsAction(filters?: { category?: string; city?: string }) {
   try {
     let q = query(collection(db, "market_listings"), orderBy("createdAt", "desc"));

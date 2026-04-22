@@ -25,11 +25,12 @@ import {
   AlertTriangle
 } from "lucide-react";
 import { 
-  updateProfile, 
   updatePassword, 
   deleteUser, 
   reauthenticateWithCredential, 
-  EmailAuthProvider 
+  EmailAuthProvider,
+  GoogleAuthProvider,
+  linkWithPopup
 } from "firebase/auth";
 import { AnimatePresence } from "framer-motion";
 
@@ -98,6 +99,22 @@ export default function ProfilePage() {
     setIsUpdating(false);
   };
 
+  const handleLinkGoogle = async () => {
+    if (!user) return;
+    setIsUpdating(true);
+    setStatus(null);
+    try {
+      const provider = new GoogleAuthProvider();
+      await linkWithPopup(user, provider);
+      setStatus({ type: 'success', msg: "Konto erfolgreich mit Google verknüpft!" });
+      // Refresh user data
+      setUser(auth.currentUser);
+    } catch (error: any) {
+      setStatus({ type: 'error', msg: "Verknüpfung fehlgeschlagen: " + error.message });
+    }
+    setIsUpdating(false);
+  };
+
   const handleDeleteAccount = async () => {
     if (!user) return;
     const confirm = window.confirm("Bist du absolut sicher? Dein Account wird unwiderruflich gelöscht.");
@@ -131,7 +148,7 @@ export default function ProfilePage() {
             className="flex items-center gap-6"
           >
             <div className="relative group">
-              <div className="absolute inset-0 bg-primary blur-[30px] opacity-20 group-hover:opacity-40 transition-opacity"></div>
+              <div className="absolute inset-0 bg-gradient-primary blur-[30px] opacity-20 group-hover:opacity-40 transition-opacity"></div>
               {user?.photoURL ? (
                 <img 
                   src={user.photoURL} 
@@ -143,20 +160,28 @@ export default function ProfilePage() {
                   <UserIcon size={48} className="text-primary" />
                 </div>
               )}
-              <div className="absolute -bottom-2 -right-2 bg-primary text-secondary p-2 rounded-xl shadow-lg">
+              <div className="absolute -bottom-2 -right-2 bg-gradient-primary text-secondary p-2 rounded-xl shadow-lg">
                 <ShieldCheck size={20} />
               </div>
             </div>
             
             <div>
               <h1 className="text-4xl md:text-6xl font-black text-foreground italic uppercase tracking-tighter leading-none mb-2">
-                User <br /> <span className="text-primary">Profile.</span>
+                {user?.isAnonymous ? 'Guest' : 'User'} <br /> <span className="text-gradient">Profile.</span>
               </h1>
-              <div className="flex items-center gap-3">
-                 <div className="px-3 py-1 bg-primary/10 border border-primary/20 rounded-full flex items-center gap-2">
-                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                    <span className="text-[10px] font-black text-primary uppercase tracking-widest italic">Identity Verified</span>
+              <div className="flex flex-wrap items-center gap-3">
+                 <div className={`px-3 py-1 ${user?.isAnonymous ? 'bg-amber-500/10 border-amber-500/20 text-amber-500' : 'bg-green-500/10 border-green-500/20 text-green-500'} border rounded-full flex items-center gap-2`}>
+                    <div className={`w-2 h-2 ${user?.isAnonymous ? 'bg-amber-500' : 'bg-green-500'} rounded-full animate-pulse`}></div>
+                    <span className="text-[10px] font-black uppercase tracking-widest italic">{user?.isAnonymous ? 'Gast-Account' : 'Identity Verified'}</span>
                  </div>
+                 {user?.isAnonymous && (
+                   <button 
+                     onClick={() => setIsSettingsOpen(true)}
+                     className="px-3 py-1 bg-gradient-primary text-secondary text-[10px] font-black uppercase tracking-widest italic rounded-full shadow-lg shadow-glow-primary hover:scale-105 transition-all"
+                   >
+                     Konto sichern
+                   </button>
+                 )}
               </div>
             </div>
           </motion.div>
@@ -174,7 +199,7 @@ export default function ProfilePage() {
                 <p className="text-[10px] font-black uppercase text-foreground/40 italic tracking-[0.3em] mb-4">Verifizierte Daten</p>
                 <div className="space-y-6">
                    <div className="flex items-start gap-5">
-                      <div className="p-3 bg-foreground/5 rounded-xl"><Mail size={20} className="text-primary" /></div>
+                      <div className="p-3 bg-foreground/5 rounded-xl"><Mail size={20} className="text-gradient" /></div>
                       <div>
                          <p className="text-[10px] font-black uppercase text-foreground/20 italic tracking-widest">Primäre E-Mail</p>
                          <p className="text-lg font-black text-foreground italic tracking-tighter">{user?.email}</p>
@@ -209,10 +234,12 @@ export default function ProfilePage() {
                 className="bg-card p-8 rounded-[2rem] border border-border shadow-sm flex items-center justify-between group cursor-pointer hover:border-primary/40 transition-all"
               >
                  <div className="flex items-center gap-5">
-                    <div className="p-4 bg-primary/10 rounded-2xl group-hover:scale-110 transition-transform"><Zap className="text-primary" size={24} /></div>
+                    <div className="p-4 bg-gradient-primary opacity-20 rounded-2xl group-hover:scale-110 transition-transform"><Zap className="text-secondary" size={24} /></div>
                     <div>
                        <h3 className="font-black italic uppercase tracking-widest text-xs">Auth Method</h3>
-                       <p className="text-xs text-foreground/40 italic font-medium">{user?.providerData[0]?.providerId === 'google.com' ? 'Connected with Google' : 'Local System Account'}</p>
+                       <p className="text-xs text-foreground/40 italic font-medium">
+                         {user?.isAnonymous ? 'Temporary Guest Access' : (user?.providerData[0]?.providerId === 'google.com' ? 'Connected with Google' : 'Local System Account')}
+                       </p>
                     </div>
                  </div>
                  <ChevronRight size={20} className="text-foreground/10 group-hover:text-primary transition-colors" />
@@ -289,6 +316,25 @@ export default function ProfilePage() {
                     </div>
 
                     <div className="p-8 space-y-10 overflow-y-auto">
+                       {user?.isAnonymous && (
+                          <div className="p-6 bg-gradient-primary rounded-[2rem] text-secondary space-y-4 shadow-glow-primary">
+                             <div className="flex items-center gap-3">
+                                <Zap size={20} />
+                                <h3 className="font-black italic uppercase text-sm">Konto jetzt sichern</h3>
+                             </div>
+                             <p className="text-[10px] font-medium italic opacity-80 leading-relaxed">
+                                Dein Gast-Konto ist temporär. Verknüpfe es jetzt mit Google, um deine Daten dauerhaft zu speichern und von überall darauf zuzugreifen.
+                             </p>
+                             <button 
+                                onClick={handleLinkGoogle}
+                                disabled={isUpdating}
+                                className="w-full py-3 bg-secondary text-primary font-black italic uppercase rounded-xl text-[10px] tracking-widest hover:bg-white transition-all flex items-center justify-center gap-2"
+                             >
+                                <Globe size={14} /> Mit Google verknüpfen
+                             </button>
+                          </div>
+                       )}
+
                        {status && (
                           <motion.div 
                             initial={{ opacity: 0, y: -10 }} 
