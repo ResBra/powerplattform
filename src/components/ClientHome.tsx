@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { 
   User as UserIcon,
   ShieldCheck, 
@@ -236,45 +237,45 @@ export default function ClientHome({ settings: initialSettings }: any) {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10">
           {activeModules.map((engine, idx) => (
-            <motion.div 
-              key={engine.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: idx * 0.1 }}
-              onClick={() => router.push(engine.href)}
-              className="group relative p-8 md:p-12 bg-card border border-border rounded-[3rem] md:rounded-[4rem] shadow-sm hover:shadow-2xl hover:shadow-primary/10 transition-all duration-700 cursor-pointer overflow-hidden min-h-[350px] md:min-h-[400px] flex flex-col justify-between"
-            >
-               <div className="absolute inset-0 z-0">
-                 <img 
-                   src={engine.bgImage} 
-                   alt="" 
-                   className="w-full h-full object-cover opacity-20 md:opacity-30 group-hover:opacity-50 group-hover:scale-110 transition-all duration-1000" 
-                 />
-                 {/* GRADIENT CONTROL: 'from-card' (Light Mode: White / Dark Mode: Dark) - Adjust here for shadow/depth */}
-                 <div className={`absolute inset-0 bg-gradient-to-t from-card via-card/80 md:via-card/40 to-transparent group-hover:from-primary/20 transition-all duration-700`}></div>
-              </div>
-              
-              <div className="relative z-10 flex flex-col h-full gap-10">
-                <div className="flex items-start justify-between">
-                  <div className="p-5 md:p-6 bg-foreground/10 backdrop-blur-md rounded-3xl group-hover:scale-110 group-hover:bg-primary transition-all duration-500 group-hover:text-secondary group-hover:shadow-xl group-hover:shadow-primary/30">
-                    {engine.icon}
+            <Link key={engine.id} href={engine.href}>
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.1 }}
+                className="group relative p-8 md:p-12 bg-card border border-border rounded-[3rem] md:rounded-[4rem] shadow-sm hover:shadow-2xl hover:shadow-primary/10 transition-all duration-700 cursor-pointer overflow-hidden min-h-[350px] md:min-h-[400px] flex flex-col justify-between"
+              >
+                 <div className="absolute inset-0 z-0">
+                   <img 
+                     src={engine.bgImage} 
+                     alt="" 
+                     className="w-full h-full object-cover opacity-20 md:opacity-30 group-hover:opacity-50 group-hover:scale-110 transition-all duration-1000" 
+                   />
+                   {/* GRADIENT CONTROL: 'from-card' (Light Mode: White / Dark Mode: Dark) - Adjust here for shadow/depth */}
+                   <div className={`absolute inset-0 bg-gradient-to-t from-card via-card/80 md:via-card/40 to-transparent group-hover:from-primary/20 transition-all duration-700`}></div>
+                </div>
+                
+                <div className="relative z-10 flex flex-col h-full gap-10">
+                  <div className="flex items-start justify-between">
+                    <div className="p-5 md:p-6 bg-foreground/10 backdrop-blur-md rounded-3xl group-hover:scale-110 group-hover:bg-primary transition-all duration-500 group-hover:text-secondary group-hover:shadow-xl group-hover:shadow-primary/30">
+                      {engine.icon}
+                    </div>
+                    <div className="text-right">
+                      <p className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-primary mb-1">{engine.status}</p>
+                      <p className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-foreground/20 leading-none">{engine.metrics}</p>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-primary mb-1">{engine.status}</p>
-                    <p className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-foreground/20 leading-none">{engine.metrics}</p>
+  
+                  <div>
+                    <h3 className="text-3xl md:text-5xl font-black text-foreground italic uppercase tracking-tighter mb-4 group-hover:text-primary transition-colors leading-none">{engine.title}</h3>
+                    <p className="text-foreground/40 text-xs md:text-lg font-medium italic max-w-sm leading-relaxed">{engine.desc}</p>
+                  </div>
+  
+                  <div className="mt-4 flex items-center gap-4 text-[10px] md:text-sm font-black text-foreground group-hover:gap-6 transition-all uppercase tracking-[0.2em] italic">
+                    Showcase betreten <ArrowRight size={20} className="text-primary" />
                   </div>
                 </div>
-
-                <div>
-                  <h3 className="text-3xl md:text-5xl font-black text-foreground italic uppercase tracking-tighter mb-4 group-hover:text-primary transition-colors leading-none">{engine.title}</h3>
-                  <p className="text-foreground/40 text-xs md:text-lg font-medium italic max-w-sm leading-relaxed">{engine.desc}</p>
-                </div>
-
-                <div className="mt-4 flex items-center gap-4 text-[10px] md:text-sm font-black text-foreground group-hover:gap-6 transition-all uppercase tracking-[0.2em] italic">
-                  Showcase betreten <ArrowRight size={20} className="text-primary" />
-                </div>
-              </div>
-            </motion.div>
+              </motion.div>
+            </Link>
           ))}
         </div>
       </section>
