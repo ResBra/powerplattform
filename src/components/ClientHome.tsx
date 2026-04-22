@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { 
-  User,
+  User as UserIcon,
   ShieldCheck, 
   Terminal, 
   ArrowRight, 
@@ -22,7 +22,8 @@ import {
   Rocket
 } from "lucide-react";
 import { auth } from "@/lib/firebase";
-import { onAuthStateChanged, User } from "firebase/auth";
+import { onAuthStateChanged } from "firebase/auth";
+import type { User } from "firebase/auth";
 import { getGlobalSettings } from "@/app/actions/settings";
 
 export default function ClientHome({ settings: initialSettings }: any) {
@@ -105,7 +106,7 @@ export default function ClientHome({ settings: initialSettings }: any) {
       id: "profile",
       title: "User Profile",
       desc: "Zentrale Identitäts- & Sicherheitsverwaltung",
-      icon: <User className="text-amber-500" size={32} />,
+      icon: <UserIcon className="text-amber-500" size={32} />,
       status: "Verified",
       metrics: "Identity Core",
       href: "/modules/profile",
