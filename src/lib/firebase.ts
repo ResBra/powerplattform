@@ -2,12 +2,11 @@ import { initializeApp, getApps, getApp } from "firebase/app";
 import { 
   getAuth, 
   GoogleAuthProvider, 
-  setPersistence, 
   indexedDBLocalPersistence,
   initializeAuth,
   browserLocalPersistence
 } from "firebase/auth";
-import { getFirestore, connectFirestoreEmulator } from "firebase/firestore";
+import { getFirestore, enableIndexedDbPersistence, CACHE_SIZE_UNLIMITED } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 import { getAnalytics, isSupported } from "firebase/analytics";
 
@@ -20,18 +19,6 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID
 };
 
-const validateConfig = () => {
-    const missing = Object.entries(firebaseConfig)
-        .filter(([_, value]) => !value)
-        .map(([key]) => key);
-    
-    if (missing.length > 0) {
-        console.warn("⚠️ CLOUD WARNING: Missing environment variables:", missing.join(", "));
-        return false;
-    }
-    return true;
-};
-
 // --- SINGLETON SERVICE HOLDER ---
 let app: any = null;
 let auth: any = null;
@@ -41,35 +28,45 @@ let storage: any = null;
 let analytics: any = null;
 
 const initFirebase = () => {
-    if (typeof window === "undefined") return; // Skip on server/build
+    if (typeof window === "undefined") return; 
     
     if (!app) {
         try {
-            const isConfigValid = validateConfig();
-            
             app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
             
-            // SPECIAL INITIALIZATION FOR CAPACITOR
-            auth = initializeAuth(app, {
-              persistence: indexedDBLocalPersistence
-            });
+            // 1. HARDENED AUTH INITIALIZATION
+            // On mobile, we MUST use indexedDBLocalPersistence for session reliability
+            try {
+               auth = getAuth(app);
+            } catch (e) {
+               auth = initializeAuth(app, {
+                 persistence: indexedDBLocalPersistence
+               });
+            }
 
             googleProvider = new GoogleAuthProvider();
+            
+            // 2. FIRESTORE WITH OFFLINE PERSISTENCE (CRITICAL FOR ANDROID)
             db = getFirestore(app);
+            if (typeof window !== "undefined") {
+              enableIndexedDbPersistence(db).catch((err) => {
+                  if (err.code === 'failed-precondition') {
+                      console.warn("Multiple tabs open, persistence can only be enabled in one tab at a time.");
+                  } else if (err.code === 'unimplemented') {
+                      console.warn("The current browser doesn't support all of the features required to enable persistence");
+                  }
+              });
+            }
+
             storage = getStorage(app);
             
-            if (isConfigValid) {
-                console.log("🚀 CLOUD ENGINE: Connected to project [" + firebaseConfig.projectId + "]");
-                
-                // Initialize Analytics
-                isSupported().then(supported => {
-                    if (supported) analytics = getAnalytics(app);
-                });
-            } else {
-                console.warn("⚠️ CLOUD WARNING: Firebase initialized with INCOMPLETE configuration.");
-            }
+            isSupported().then(supported => {
+                if (supported) analytics = getAnalytics(app);
+            });
+            
+            console.log("✅ FIREBASE SYSTEM ONLINE: Native Android Optimization Active");
         } catch (error) {
-            console.error("❌ CLOUD CRITICAL ERROR during initialization:", error);
+            console.error("❌ FIREBASE CRITICAL ERROR:", error);
         }
     }
 };

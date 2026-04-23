@@ -57,14 +57,18 @@ function LoginContent() {
   useEffect(() => {
     setMounted(true);
     if (typeof window !== "undefined" && auth) {
-      // 1. Check for Redirect Results (important for Capacitor/Mobile)
+      // 1. Silent Check for Redirect Results
       getRedirectResult(auth).then((result) => {
         if (result?.user) {
+          console.log("✅ Google Redirect Success");
           redirectToDestination();
         }
       }).catch((err) => {
-        console.error("Redirect Auth Error:", err);
-        setError("Anmeldung via Redirect fehlgeschlagen.");
+        // Only show error if it's a real failure, not just a cleared state
+        if (err.code !== "auth/no-auth-event") {
+          console.error("Redirect Error:", err.code);
+          setError("Google Anmeldung konnte nicht abgeschlossen werden. (" + err.code + ")");
+        }
       });
 
       // Cleanup recaptcha if any
@@ -72,9 +76,9 @@ function LoginContent() {
       if (existing) existing.innerHTML = "";
       
       const unsubscribe = auth.onAuthStateChanged((u: any) => {
-         // Only redirect if we are strictly on the root and NOT pending
-         if (u && !isPending && (window.location.pathname === "/" || window.location.pathname.endsWith("index.html"))) {
-            redirectToDestination();
+         if (u && !isPending) {
+            const isRoot = window.location.pathname === "/" || window.location.pathname.endsWith("index.html");
+            if (isRoot) redirectToDestination();
          }
       });
       return () => unsubscribe();
@@ -85,6 +89,7 @@ function LoginContent() {
   const setupRecaptcha = (containerId: string) => {
     if (!auth) return;
     try {
+      // Force visible for reliability on mobile if hidden fails
       return new RecaptchaVerifier(auth, containerId, {
         size: "invisible",
         callback: () => { console.log("Recaptcha verified"); }
@@ -99,29 +104,31 @@ function LoginContent() {
     if (!auth) return;
     setIsPending(true);
     setError("");
+    
     try {
       googleProvider.setCustomParameters({ prompt: 'select_account' });
       
-      // DETECTION FOR NATIVE/MOBILE
-      const isNative = window.location.href.includes('localhost') || 
-                       window.location.href.includes('127.0.0.1') ||
-                       window.location.protocol === 'file:' ||
-                       /Android|iPhone|iPad/i.test(navigator.userAgent);
+      // Better detection for Capacitor / Android WebView
+      const isNative = window.location.protocol === 'file:' || 
+                       window.location.hostname === 'localhost' ||
+                       window.location.hostname === '127.0.0.1';
 
       if (isNative) {
-        // Popups are often blocked in WebViews (Capacitor)
+        console.log("🚀 Starting Native Google Redirect...");
+        // On mobile, redirects are more stable than popups
         await signInWithRedirect(auth, googleProvider);
+        // Note: Redirect might not happen instantly, so we add a timeout to reset state
+        setTimeout(() => setIsPending(false), 5000);
       } else {
         await signInWithPopup(auth, googleProvider);
         redirectToDestination();
       }
     } catch (err: any) {
-      console.error("DEBUG AUTH ERROR:", err.code);
-      if (err.code === "auth/unauthorized-domain") {
-        setError("Domain nicht autorisiert: Bitte 'powerplattform.vercel.app' in der Firebase Konsole hinzufügen.");
-      } else {
-        setError("Google Authentifizierung fehlgeschlagen: " + err.message);
-      }
+      console.error("AUTH ERROR:", err.code);
+      const msg = err.code === "auth/unauthorized-domain" 
+        ? "Domain nicht autorisiert." 
+        : "Google Login fehlgeschlagen: " + (err.message || err.code);
+      setError(msg);
       setIsPending(false);
     }
   }

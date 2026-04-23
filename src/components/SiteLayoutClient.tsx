@@ -77,47 +77,45 @@ export default function SiteLayoutClient({ children, activePage, settings }: Sit
     let resolved = false;
 
     const unsubscribe = auth.onAuthStateChanged((u: any) => {
-      // If we get a user, everything is fine immediately
+      console.log("🔍 Auth State changed:", u ? "User present" : "No user");
+      
       if (u) {
         resolved = true;
         setUser(u);
         setIsAuthenticating(false);
       } else {
-        // If we get null, we wait a moment on mobile to see if it's just a slow load
+        // DEFENSIVE CHECK FOR MOBILE
+        // We wait up to 3 seconds before assuming the user is really logged out.
+        // This prevents the "flash" of login screen during slow initialization.
         setTimeout(() => {
-          // Re-check the current auth state
-          const currentUser = auth.currentUser;
-          if (!currentUser && !isRootPage()) {
+          // Check if a user appeared in the last 3s
+          const finalUser = auth.currentUser;
+          if (!finalUser && !isRootPage()) {
+             console.warn("🚪 No user confirmed after wait. Redirecting to login.");
              resolved = true;
              const callbackUrl = encodeURIComponent(window.location.pathname + window.location.search);
              window.location.href = `/?callbackUrl=${callbackUrl}`;
-          } else if (currentUser) {
-             // User appeared in the meantime!
+          } else if (finalUser) {
              resolved = true;
-             setUser(currentUser);
+             setUser(finalUser);
              setIsAuthenticating(false);
           } else {
-             // We are on the root page or somehow safe
              resolved = true;
              setIsAuthenticating(false);
           }
-        }, 1500); // 1.5s "Gedulds-Puffer" für Mobile
+        }, 3000); 
       }
     });
 
     // 1.5 FAILSAFE TIMEOUT
-    // iOS Safari WebViews sometimes silently hang the IDB promise in Firebase Auth.
-    // If auth state hasn't resolved in 5 seconds (increased for mobile), break the deadlock.
     const deadlockTimer = setTimeout(() => {
-      if (!resolved) {
-         console.warn("Firebase Auth deadlock strictly caught. Escaping to login.");
+      if (!resolved && !isRootPage()) {
+         console.error("⛔ Auth Deadlock strictly caught. Escaping to login as failsafe.");
          setIsAuthenticating(false);
-         if (!isRootPage()) {
-            const callbackUrl = encodeURIComponent(window.location.pathname + window.location.search);
-            window.location.href = `/?callbackUrl=${callbackUrl}`;
-         }
+         const callbackUrl = encodeURIComponent(window.location.pathname + window.location.search);
+         window.location.href = `/?callbackUrl=${callbackUrl}`;
       }
-    }, 5000);
+    }, 8000); // Massive buffer for slow mobile networks
 
     // 2. PREFERENCES LOAD
     const savedTheme = localStorage.getItem("theme") as "dark" | "light" || "dark";
