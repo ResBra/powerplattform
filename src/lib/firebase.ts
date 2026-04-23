@@ -1,5 +1,5 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider } from "firebase/auth";
+import { getAuth, GoogleAuthProvider, setPersistence, browserLocalPersistence } from "firebase/auth";
 import { getFirestore, connectFirestoreEmulator } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 import { getAnalytics, isSupported } from "firebase/analytics";
@@ -42,6 +42,12 @@ const initFirebase = () => {
             
             app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
             auth = getAuth(app);
+            
+            // Force persistence to LOCAL for Capacitor/Mobile reliability
+            setPersistence(auth, browserLocalPersistence).catch(err => {
+               console.error("Auth Persistence Error:", err);
+            });
+
             googleProvider = new GoogleAuthProvider();
             db = getFirestore(app);
             storage = getStorage(app);

@@ -57,12 +57,18 @@ export default function SiteLayoutClient({ children, activePage, settings }: Sit
     };
     window.addEventListener("scroll", handleScroll);
     
+    // Helper to determine if we are on the login/root page
+    const isRootPage = () => {
+       const path = window.location.pathname;
+       return path === "/" || path === "" || path.endsWith("index.html");
+    };
+
     // 1. AUTH OBSERVER (Universal for Web & Mobile)
     if (!auth) {
       console.warn("Auth module missing. Escaping auth check.");
       setIsAuthenticating(false);
-      if (window.location.pathname !== "/") {
-        const callbackUrl = encodeURIComponent(window.location.pathname);
+      if (!isRootPage()) {
+        const callbackUrl = encodeURIComponent(window.location.pathname + window.location.search);
         window.location.href = `/?callbackUrl=${callbackUrl}`;
       }
       return;
@@ -74,8 +80,8 @@ export default function SiteLayoutClient({ children, activePage, settings }: Sit
       resolved = true;
       setUser(u);
       // If we are on a protected page (not the login page /) and no user is found:
-      if (!u && window.location.pathname !== "/") {
-        const callbackUrl = encodeURIComponent(window.location.pathname);
+      if (!u && !isRootPage()) {
+        const callbackUrl = encodeURIComponent(window.location.pathname + window.location.search);
         window.location.href = `/?callbackUrl=${callbackUrl}`;
         // Do NOT set isAuthenticating to false here, keep the loading screen alive 
         // to prevent rendering the heavy dashboard before the redirect kicks in.
@@ -86,17 +92,17 @@ export default function SiteLayoutClient({ children, activePage, settings }: Sit
 
     // 1.5 FAILSAFE TIMEOUT
     // iOS Safari WebViews sometimes silently hang the IDB promise in Firebase Auth.
-    // If auth state hasn't resolved in 3 seconds, break the deadlock and assume logged out!
+    // If auth state hasn't resolved in 5 seconds (increased for mobile), break the deadlock.
     const deadlockTimer = setTimeout(() => {
       if (!resolved) {
          console.warn("Firebase Auth deadlock strictly caught. Escaping to login.");
          setIsAuthenticating(false);
-         if (window.location.pathname !== "/") {
-            const callbackUrl = encodeURIComponent(window.location.pathname);
+         if (!isRootPage()) {
+            const callbackUrl = encodeURIComponent(window.location.pathname + window.location.search);
             window.location.href = `/?callbackUrl=${callbackUrl}`;
          }
       }
-    }, 2500);
+    }, 5000);
 
     // 2. PREFERENCES LOAD
     const savedTheme = localStorage.getItem("theme") as "dark" | "light" || "dark";

@@ -15,10 +15,14 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     if (!auth) return; // Skip if firebase not initialized (e.g. on server)
 
     const unsubscribe = onAuthStateChanged(auth, (u) => {
+      const isRootPage = window.location.pathname === "/" || window.location.pathname.endsWith("index.html");
+      
       if (!u) {
         // Redirekt zum Login mit der aktuellen URL als Rücksprungziel
-        const callbackUrl = encodeURIComponent(pathname);
-        router.push(`/?callbackUrl=${callbackUrl}`);
+        if (!isRootPage) {
+           const callbackUrl = encodeURIComponent(window.location.pathname + window.location.search);
+           router.push(`/?callbackUrl=${callbackUrl}`);
+        }
       } else {
         setUser(u);
         setLoading(false);

@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from "react";
 import { 
   signInWithPopup, 
+  signInWithRedirect,
+  getRedirectResult,
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword, 
   signInAnonymously,
@@ -55,12 +57,23 @@ function LoginContent() {
   useEffect(() => {
     setMounted(true);
     if (typeof window !== "undefined" && auth) {
+      // 1. Check for Redirect Results (important for Capacitor/Mobile)
+      getRedirectResult(auth).then((result) => {
+        if (result?.user) {
+          redirectToDestination();
+        }
+      }).catch((err) => {
+        console.error("Redirect Auth Error:", err);
+        setError("Anmeldung via Redirect fehlgeschlagen.");
+      });
+
       // Cleanup recaptcha if any
       const existing = document.getElementById("recaptcha-container");
       if (existing) existing.innerHTML = "";
       
       const unsubscribe = auth.onAuthStateChanged((u: any) => {
-         if (u && !isPending && window.location.pathname === "/") {
+         // Only redirect if we are strictly on the root and NOT pending
+         if (u && !isPending && (window.location.pathname === "/" || window.location.pathname.endsWith("index.html"))) {
             redirectToDestination();
          }
       });
@@ -85,16 +98,29 @@ function LoginContent() {
   async function handleGoogleLogin() {
     if (!auth) return;
     setIsPending(true);
+    setError("");
     try {
       googleProvider.setCustomParameters({ prompt: 'select_account' });
-      await signInWithPopup(auth, googleProvider);
-      redirectToDestination();
+      
+      // DETECTION FOR NATIVE/MOBILE
+      const isNative = window.location.href.includes('localhost') || 
+                       window.location.href.includes('127.0.0.1') ||
+                       window.location.protocol === 'file:' ||
+                       /Android|iPhone|iPad/i.test(navigator.userAgent);
+
+      if (isNative) {
+        // Popups are often blocked in WebViews (Capacitor)
+        await signInWithRedirect(auth, googleProvider);
+      } else {
+        await signInWithPopup(auth, googleProvider);
+        redirectToDestination();
+      }
     } catch (err: any) {
       console.error("DEBUG AUTH ERROR:", err.code);
       if (err.code === "auth/unauthorized-domain") {
         setError("Domain nicht autorisiert: Bitte 'powerplattform.vercel.app' in der Firebase Konsole hinzufügen.");
       } else {
-        setError("Google Authentifizierung fehlgeschlagen.");
+        setError("Google Authentifizierung fehlgeschlagen: " + err.message);
       }
       setIsPending(false);
     }
