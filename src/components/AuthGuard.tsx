@@ -17,15 +17,23 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     const unsubscribe = onAuthStateChanged(auth, (u) => {
       const isRootPage = window.location.pathname === "/" || window.location.pathname.endsWith("index.html");
       
-      if (!u) {
-        // Redirekt zum Login mit der aktuellen URL als Rücksprungziel
-        if (!isRootPage) {
-           const callbackUrl = encodeURIComponent(window.location.pathname + window.location.search);
-           router.push(`/?callbackUrl=${callbackUrl}`);
-        }
-      } else {
+      if (u) {
         setUser(u);
         setLoading(false);
+      } else {
+        // Wait a bit on mobile to confirm null state
+        setTimeout(() => {
+          if (!auth.currentUser && !isRootPage) {
+            const callbackUrl = encodeURIComponent(window.location.pathname + window.location.search);
+            router.push(`/?callbackUrl=${callbackUrl}`);
+          } else if (auth.currentUser) {
+            setUser(auth.currentUser);
+            setLoading(false);
+          } else {
+            // Probably on root page
+            setLoading(false);
+          }
+        }, 1500);
       }
     });
 

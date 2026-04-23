@@ -9,6 +9,9 @@ const config: CapacitorConfig = {
     allowNavigation: [
       'firebasestorage.googleapis.com',
       '*.firebasestorage.googleapis.com',
+      '*.googleapis.com',
+      '*.firebaseio.com',
+      '*.firebaseapp.com',
       'lh3.googleusercontent.com'
     ]
   },

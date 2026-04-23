@@ -77,16 +77,31 @@ export default function SiteLayoutClient({ children, activePage, settings }: Sit
     let resolved = false;
 
     const unsubscribe = auth.onAuthStateChanged((u: any) => {
-      resolved = true;
-      setUser(u);
-      // If we are on a protected page (not the login page /) and no user is found:
-      if (!u && !isRootPage()) {
-        const callbackUrl = encodeURIComponent(window.location.pathname + window.location.search);
-        window.location.href = `/?callbackUrl=${callbackUrl}`;
-        // Do NOT set isAuthenticating to false here, keep the loading screen alive 
-        // to prevent rendering the heavy dashboard before the redirect kicks in.
-      } else {
+      // If we get a user, everything is fine immediately
+      if (u) {
+        resolved = true;
+        setUser(u);
         setIsAuthenticating(false);
+      } else {
+        // If we get null, we wait a moment on mobile to see if it's just a slow load
+        setTimeout(() => {
+          // Re-check the current auth state
+          const currentUser = auth.currentUser;
+          if (!currentUser && !isRootPage()) {
+             resolved = true;
+             const callbackUrl = encodeURIComponent(window.location.pathname + window.location.search);
+             window.location.href = `/?callbackUrl=${callbackUrl}`;
+          } else if (currentUser) {
+             // User appeared in the meantime!
+             resolved = true;
+             setUser(currentUser);
+             setIsAuthenticating(false);
+          } else {
+             // We are on the root page or somehow safe
+             resolved = true;
+             setIsAuthenticating(false);
+          }
+        }, 1500); // 1.5s "Gedulds-Puffer" für Mobile
       }
     });
 
