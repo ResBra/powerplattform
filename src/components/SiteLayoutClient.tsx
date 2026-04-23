@@ -250,9 +250,9 @@ export default function SiteLayoutClient({ children, activePage, settings }: Sit
            <div className="relative -top-8">
               <Link href="/dashboard" className="relative flex flex-col items-center">
                  {activePage === 'dashboard' && (
-                    <motion.div layoutId="activeGlowLarge" className="absolute -inset-8 bg-gradient-primary opacity-30 blur-2xl rounded-full" />
+                    <motion.div layoutId="activeGlowLarge" className="absolute -inset-8 bg-gradient-primary opacity-20 blur-2xl rounded-full" />
                  )}
-                 <div className={`relative z-10 p-5 rounded-full border border-white/10 transition-all duration-500 shadow-2xl ${activePage === 'dashboard' ? 'bg-gradient-primary text-secondary scale-125 shadow-glow-primary' : 'bg-card/80 text-foreground/40 hover:scale-110'}`}>
+                 <div className={`relative z-10 p-5 rounded-full border border-white/10 transition-all duration-500 ${activePage === 'dashboard' ? 'bg-gradient-primary text-secondary scale-125' : 'bg-card/80 text-foreground/40 hover:scale-110'}`}>
                     <LayoutDashboard size={28} />
                  </div>
               </Link>
