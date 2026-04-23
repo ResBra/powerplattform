@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import SiteLayoutClient from "@/components/SiteLayoutClient";
 import AuthGuard from "@/components/AuthGuard";
 import { 
@@ -24,8 +24,13 @@ import { getOrCreateChatAction, deleteListingAction } from "../../actions";
 import { useCart } from "../../CartContext";
 
 export default function ListingClient() {
-  const { listingId } = useParams();
+  const params = useParams();
+  const searchParams = useSearchParams();
   const router = useRouter();
+
+  // Supports both /modules/market/listing/[listingId] and /modules/market/view?id=[listingId]
+  const listingId = params?.listingId || searchParams.get('id');
+
   const [listing, setListing] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [isRedirecting, setIsRedirecting] = useState(false);
@@ -180,7 +185,7 @@ export default function ListingClient() {
                        {isOwner ? (
                          <div className="grid grid-cols-2 gap-4">
                             <button 
-                              onClick={() => router.push(`/modules/market/edit/${listing.id}`)}
+                              onClick={() => router.push(`/modules/market/edit/safe?id=${listing.id}`)}
                               className="w-full bg-white/10 text-white font-black italic uppercase tracking-widest py-6 rounded-[2rem] border border-white/10 hover:bg-white/20 transition-all flex items-center justify-center gap-3"
                             >
                                <Edit size={18} /> Bearbeiten

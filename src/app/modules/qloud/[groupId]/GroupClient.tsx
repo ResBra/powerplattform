@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import SiteLayoutClient from "@/components/SiteLayoutClient";
 import {
    QrCode,
@@ -21,7 +21,7 @@ import {
    X,
    Download,
    ShieldCheck,
-   Image as ImageIcon,
+   ImageIcon,
    Lock,
    UserPlus,
    MessageCircle,
@@ -53,8 +53,13 @@ import { QRCodeCanvas } from "qrcode.react";
 import { uploadImage } from '@/lib/storage';
 
 export default function GroupClient() {
-   const { groupId } = useParams();
+   const params = useParams();
+   const searchParams = useSearchParams();
    const router = useRouter();
+   
+   // Supports both /modules/qloud/[groupId] and /modules/qloud/view?id=[groupId]
+   const groupId = params?.groupId || searchParams.get('id');
+   
    const [activeTab, setActiveTab] = useState<"chat" | "gallery" | "admin" | "moderation">("chat");
    const [group, setGroup] = useState<any>(null);
    const [messages, setMessages] = useState<any[]>([]);

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter, useParams, useSearchParams } from "next/navigation";
 import SiteLayoutClient from "@/components/SiteLayoutClient";
 import AuthGuard from "@/components/AuthGuard";
 import { 
@@ -32,8 +32,13 @@ const CATEGORIES = [
 ];
 
 export default function EditListingClient() {
-  const { listingId } = useParams();
+  const params = useParams();
+  const searchParams = useSearchParams();
   const router = useRouter();
+
+  // Supports both /modules/market/edit/[listingId] and /modules/market/edit/safe?id=[listingId]
+  const listingId = params?.listingId || searchParams.get('id');
+
   const [loading, setLoading] = useState(true);
   const [isPending, setIsPending] = useState(false);
   
@@ -147,7 +152,7 @@ export default function EditListingClient() {
       });
 
       if (result.success) {
-        router.push(`/modules/market/listing/${listingId}`);
+        router.push(`/modules/market/view?id=${listingId}`);
       } else {
         alert(result.error || "Fehler beim Aktualisieren.");
         setIsPending(false);

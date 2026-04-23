@@ -161,7 +161,7 @@ export default function MarketHub() {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: idx * 0.05 }}
-                      onClick={() => router.push(`/modules/market/listing/${item.id}`)}
+                      onClick={() => router.push(`/modules/market/view?id=${item.id}`)}
                       className="group relative cursor-pointer"
                     >
                       <div className="flex flex-col h-[520px] bg-card border border-white/5 rounded-[2.5rem] overflow-hidden shadow-xl transition-all group-hover:shadow-primary/10 group-hover:border-primary/20 group-hover:-translate-y-2">

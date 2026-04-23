@@ -129,13 +129,13 @@ export default function QloudPage() {
        if (scannedId) {
           setIsScanning(false);
           setIsJoinOpen(false);
-          router.push(`/modules/qloud/${scannedId}`);
+          router.push(`/modules/qloud/view?id=${scannedId}`);
        }
     } else {
        // Falls es eine reine ID ist
        setIsScanning(false);
        setIsJoinOpen(false);
-       router.push(`/modules/qloud/${decodedText}`);
+       router.push(`/modules/qloud/view?id=${decodedText}`);
     }
   };
 
@@ -239,7 +239,7 @@ export default function QloudPage() {
            ) : myGroups.length > 0 ? (
              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {myGroups.map((group, idx) => (
-                   <Link key={group.id} href={`/modules/qloud/${group.id}`}>
+                   <Link key={group.id} href={`/modules/qloud/view?id=${group.id}`}>
                       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.05 }} className="group p-8 bg-card border border-border rounded-[2.5rem] hover:border-primary/40 transition-all cursor-pointer shadow-sm hover:shadow-2xl relative overflow-hidden">
                          <div className="relative z-10 flex flex-col gap-6">
                             <div className="flex items-center justify-between">
