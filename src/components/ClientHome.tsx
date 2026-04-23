@@ -280,6 +280,42 @@ export default function ClientHome({ settings: initialSettings }: any) {
           ))}
         </div>
       </section>
+      
+      {/* NATIVE SYNC SECTION - APK DOWNLOAD */}
+      <section className="relative px-2 md:px-0">
+        <div className="relative p-8 md:p-16 bg-gradient-primary rounded-[3rem] md:rounded-[4rem] overflow-hidden group shadow-2xl shadow-glow-primary">
+          <div className="absolute top-[-20%] right-[-10%] w-[50%] h-[150%] bg-white/10 blur-[100px] rounded-full group-hover:scale-125 transition-transform duration-1000"></div>
+          
+          <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-10 md:gap-20">
+            <div className="space-y-6 text-center md:text-left">
+              <div className="flex items-center justify-center md:justify-start gap-3">
+                 <div className="p-3 bg-secondary rounded-2xl text-primary animate-pulse shadow-lg"><Smartphone size={24} /></div>
+                 <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.3em] text-secondary italic">Native Experience</span>
+              </div>
+              <h2 className="text-3xl md:text-6xl font-black text-secondary italic uppercase tracking-tighter leading-[0.9]">
+                Mobile <br /> <span className="opacity-40">Identity Sync.</span>
+              </h2>
+              <p className="text-secondary/80 text-xs md:text-lg font-medium italic max-w-lg leading-relaxed">
+                Verbinde dein System direkt mit deinem Smartphone. Lade die native PowerPlattform Engine herunter und erlebe maximale Performance.
+              </p>
+            </div>
+
+            <div className="w-full md:w-auto">
+              <a 
+                href="/PowerPlattform.apk" 
+                download="PowerPlattform.apk"
+                className="w-full md:w-auto px-12 py-6 bg-secondary text-primary font-black italic uppercase rounded-2xl tracking-[0.2em] text-sm md:text-lg hover:scale-105 active:scale-95 transition-all shadow-2xl flex items-center justify-center gap-4 group/btn"
+              >
+                <Zap size={24} className="group-hover/btn:rotate-12 transition-transform" /> 
+                Download APK
+              </a>
+              <div className="mt-4 text-center">
+                <p className="text-[8px] md:text-[10px] font-black uppercase text-secondary/40 italic tracking-widest">Version 1.6.2 // Android Package</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 pb-20 px-2 md:px-0">
         <div className="bg-card p-4 md:p-6 rounded-2xl md:rounded-3xl border border-border flex flex-col gap-3">
